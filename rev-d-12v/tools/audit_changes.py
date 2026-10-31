@@ -23,6 +23,7 @@ tag('C2', ['C11', 'C12', 'C13', 'C14', 'C22', 'C46', 'C49'])                  # 
 tag('C3', ['C21', 'C23', 'C57'])                                              # e-caps
 tag('C4', ['R23', 'R25', 'R26', 'R27', 'U10'])
 tag('A4', [])
+tag('D2', ['J1', 'J6', 'J28', 'J29'])                                       # 2x3 headers -> 2 x 3-pin terminals each
 tag('D1', ['J3', 'J4', 'J5', 'J9', 'J10', 'J11', 'J18', 'J21', 'J22', 'J23'])  # connectors
 rows = collections.defaultdict(list)
 unexpl = []

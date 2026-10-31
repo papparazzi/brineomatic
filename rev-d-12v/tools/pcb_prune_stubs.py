@@ -1,6 +1,7 @@
-"""Remove dangling track/via stubs (ends touching nothing) iteratively.  usage: pcb_prune_stubs.py in out"""
+"""Remove dangling track/via stubs (ends touching nothing) iteratively.  usage: pcb_prune_stubs.py in out [net1,net2,...]   (optional: only prune these nets)"""
 import sys, pcbnew
 TOL = 1000
+ONLY = set(sys.argv[3].split(',')) if len(sys.argv) > 3 else None
 b = pcbnew.LoadBoard(sys.argv[1])
 def key(p): return (round(p.x / TOL), round(p.y / TOL))
 total = 0
@@ -20,6 +21,7 @@ for _once in (1,):
             cnt.setdefault((t.GetNetname(), key(p)), []).append((t, L))
     rm = []
     for t in trk:
+        if ONLY is not None and t.GetNetname() not in ONLY: continue
         if t.GetClass() == 'PCB_VIA':
             ok = False
             for L in (pcbnew.F_Cu, pcbnew.B_Cu):

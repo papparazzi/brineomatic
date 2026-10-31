@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/erc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-10-31T13:07:08",
+    "date": "2026-10-31T16:02:55",
     "ignored_checks": [
         {
             "description": "Global label only appears once in the schematic",
@@ -212,10 +212,10 @@
                     "type": "lib_symbol_issues"
                 },
                 {
-                    "description": "The current configuration does not include the footprint library 'Connector_PinHeader_2.54mm'",
+                    "description": "The current configuration does not include the footprint library 'Connector_Phoenix_MC'",
                     "items": [
                         {
-                            "description": "Symbol J1 [Conn_02x03_Odd_Even]",
+                            "description": "Symbol J1 [Conn_01x03]",
                             "pos": {
                                 "x": 93.98,
                                 "y": 130.81
@@ -230,7 +230,7 @@
                     "description": "The current configuration does not include the symbol library 'Connector_Generic'",
                     "items": [
                         {
-                            "description": "Symbol J1 [Conn_02x03_Odd_Even]",
+                            "description": "Symbol J1 [Conn_01x03]",
                             "pos": {
                                 "x": 93.98,
                                 "y": 130.81
@@ -251,6 +251,36 @@
                                 "y": 138.43
                             },
                             "uuid": "a65c1863-2011-4a01-9164-9da7bd467cda"
+                        }
+                    ],
+                    "severity": "warning",
+                    "type": "lib_symbol_issues"
+                },
+                {
+                    "description": "The current configuration does not include the footprint library 'Connector_Phoenix_MC'",
+                    "items": [
+                        {
+                            "description": "Symbol J28 [Conn_01x03]",
+                            "pos": {
+                                "x": 96.52,
+                                "y": 130.81
+                            },
+                            "uuid": "48c877e0-fb02-49b5-8f27-92a05d06bcdd"
+                        }
+                    ],
+                    "severity": "warning",
+                    "type": "footprint_link_issues"
+                },
+                {
+                    "description": "The current configuration does not include the symbol library 'Connector_Generic'",
+                    "items": [
+                        {
+                            "description": "Symbol J28 [Conn_01x03]",
+                            "pos": {
+                                "x": 96.52,
+                                "y": 130.81
+                            },
+                            "uuid": "48c877e0-fb02-49b5-8f27-92a05d06bcdd"
                         }
                     ],
                     "severity": "warning",
@@ -5612,10 +5642,10 @@
                     "type": "lib_symbol_issues"
                 },
                 {
-                    "description": "The current configuration does not include the footprint library 'Connector_PinHeader_2.54mm'",
+                    "description": "The current configuration does not include the footprint library 'Connector_Phoenix_MC'",
                     "items": [
                         {
-                            "description": "Symbol J6 [Conn_02x03_Odd_Even]",
+                            "description": "Symbol J6 [Conn_01x03]",
                             "pos": {
                                 "x": 137.16,
                                 "y": 96.52
@@ -5630,7 +5660,7 @@
                     "description": "The current configuration does not include the symbol library 'Connector_Generic'",
                     "items": [
                         {
-                            "description": "Symbol J6 [Conn_02x03_Odd_Even]",
+                            "description": "Symbol J6 [Conn_01x03]",
                             "pos": {
                                 "x": 137.16,
                                 "y": 96.52
@@ -5651,6 +5681,36 @@
                                 "y": 104.14
                             },
                             "uuid": "f4c68d4d-5c90-437d-a2dc-812d9e90b4a0"
+                        }
+                    ],
+                    "severity": "warning",
+                    "type": "lib_symbol_issues"
+                },
+                {
+                    "description": "The current configuration does not include the footprint library 'Connector_Phoenix_MC'",
+                    "items": [
+                        {
+                            "description": "Symbol J29 [Conn_01x03]",
+                            "pos": {
+                                "x": 139.7,
+                                "y": 96.52
+                            },
+                            "uuid": "a830ad12-d7fe-44d3-bb2d-fe99554fda71"
+                        }
+                    ],
+                    "severity": "warning",
+                    "type": "footprint_link_issues"
+                },
+                {
+                    "description": "The current configuration does not include the symbol library 'Connector_Generic'",
+                    "items": [
+                        {
+                            "description": "Symbol J29 [Conn_01x03]",
+                            "pos": {
+                                "x": 139.7,
+                                "y": 96.52
+                            },
+                            "uuid": "a830ad12-d7fe-44d3-bb2d-fe99554fda71"
                         }
                     ],
                     "severity": "warning",
