@@ -20,6 +20,10 @@ Fork of [hoeken/brineomatic](https://github.com/hoeken/brineomatic) at tag **Rev
 - **Mechanics changed**: the board is 135 x 84.5 mm (Rev-C1: 106 x 63.5 mm); three of the five mounting holes moved, so the **Rev C case in `models/` does not fit**.
 - **Untested hardware.** Nothing in this branch has been built or bench-tested yet (`docs/BRINGUP_TEST_PLAN.md`). Treat it as a design proposal.
 
+## Relationship to upstream (read this before merging anything)
+- This variant is based on the **Rev-C1 tag** (`dd1f660`), not on upstream `main`. Upstream `main` has since moved on (about 17 commits, e.g. "Updating schematic for Rev D", bus-voltage sensing, spare 4-20 mA input, 30 mA PTC fuses on the 24 V sensor line, TDS header change, fiducials removed). Those changes are **not** in this branch.
+- Upstream is working on its own **Rev D** (24 V). To avoid confusion this variant's silkscreen/documents say "REV D 12V"; consider renaming it (for example "Rev C1-12V") before sharing it widely, and re-basing onto upstream `main` if the upstream Rev D schematic is the better starting point.
+
 ## How to read this branch
 | File | Content |
 |---|---|
