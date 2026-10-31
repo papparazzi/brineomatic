@@ -2463,7 +2463,7 @@
     (uuid e7e059e0-fc82-48a6-95c2-767804ad8031)
   )
 
-  (text "24v Power Input\n" (at 21.336 19.558 0)
+  (text "12v Power Input (9-15 V only)\n" (at 21.336 19.558 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 4b13e4e0-0eb1-4e14-8a4d-856d10168fe5)
   )
@@ -2471,7 +2471,7 @@
     (effects (font (size 1.27 1.27)) (justify bottom))
     (uuid 6df94cda-6c23-4a2b-83b8-8534a6dc0296)
   )
-  (text "24v to 5v Power Supply" (at 22.86 93.472 0)
+  (text "12v to 5v Power Supply" (at 22.86 93.472 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 86d59992-b716-4f63-937a-123addfcc4d0)
   )

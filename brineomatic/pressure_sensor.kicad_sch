@@ -717,7 +717,7 @@
     (uuid 14bdf44c-da8d-4787-859f-7b8379a407c6)
   )
 
-  (text_box "Designed for 4-20mA pressure sensors powered by 12-24v\n\n* 165ohm shunt for 3.3v output\n* Noise filtering RC filter: 159hz cutoff\n* PESD3V3L1BA / BAT54S for ESD and overvoltage protection"
+  (text_box "Designed for 4-20mA pressure sensors powered from the +12V rail (sensor sees Vbus - 2 V at 20 mA, check its minimum supply)\n\n* 165ohm shunt for 3.3v output\n* Noise filtering RC filter: 159hz cutoff\n* PESD3V3L1BA / BAT54S for ESD and overvoltage protection"
     (at 96.52 120.65 0) (size 93.98 12.7)
     (stroke (width 0) (type solid))
     (fill (type none))
