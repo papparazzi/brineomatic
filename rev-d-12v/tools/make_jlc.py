@@ -5,6 +5,7 @@ os.makedirs(out, exist_ok=True)
 root = ET.parse(xmlf).getroot()
 SKIP = ('TP', 'H', 'FID', 'SYM', 'U5')
 groups = collections.defaultdict(list)
+CENTRE = {'J1': (110.14, 33.04), 'J6': (141.49, 33.04), 'F1': (157.6, 67.1)}   # courtyard centres measured with pcbnew (mm, KiCad y-down)
 placed = set(); loose = []
 fpn = {c.get('ref'): (c.findtext('footprint') or '') for c in root.find('components')}
 for c in root.find('components'):
@@ -45,7 +46,10 @@ with open(out + '/_pos.csv') as f, open(out + '/CPL-rev_d.csv', 'w', newline='')
             m = re.search(r'_(\d)-G-3\.5', fpn.get(r['Ref'], ''))
             if m:   # 3.5 mm terminals: KiCad origin is pin 1, JLCPCB wants the centre of the pin row
                 x += (-1 if float(r['Rot']) == 180 else 1) * (int(m.group(1)) - 1) * 1.75
-            w.writerow([r['Ref'], '%.4fmm' % x, r['PosY'] + 'mm', 'Top', r['Rot']]); n += 1
+            y = float(r['PosY'])
+            if r['Ref'] in CENTRE:   # THT parts whose KiCad origin is not the body centre: use the courtyard centre
+                x, y = CENTRE[r['Ref']][0], -CENTRE[r['Ref']][1]
+            w.writerow([r['Ref'], '%.4fmm' % x, '%.4fmm' % y, 'Top', r['Rot']]); n += 1
 os.remove(out + '/_pos.csv')
 with open(out + '/CPL-rev_d.csv', 'a', newline='') as g:
     w = csv.writer(g)
