@@ -1,0 +1,124 @@
+# Brineomatic Rev D (12 V) - redesign charter and change register
+
+Status: PLAN ONLY. No schematic or PCB file has been modified yet (kicad/ is an untouched copy of tag Rev-C1).
+Created 2026-10-28. Baseline: github.com/hoeken/brineomatic tag Rev-C1.
+
+## 1. Goal and non-negotiables
+- Make a 12 V house-bus variant of the Rev-C1 controller that is cheap to assemble at JLCPCB Economic PCBA (Basic / Promotional-Extended parts, green solder mask, 2 or 5 boards).
+- **The board must keep working exactly as Rev-C1 does at 12 V.** Rev-C1 already specifies a 12-30 V input (README), so 12 V behaviour is the known-good baseline. Every difference below must be a deliberate, justified, individually verified change.
+- Target: ~50 % lower cost per board than the Rev-C1 Economic quote (v4b: $271.62 for 5 boards ~ $54/board).
+
+## 2. Baseline facts (from the Rev-C1 netlist, 28 Oct 2026)
+- 302 schematic parts, 154 nets, 21 sheets. ERC/DRC: only missing-library warnings (522 / 203), 0 unconnected items, 4 hole_clearance. DRC schematic parity: 199 `footprint_symbol_field_mismatch`, **0 net/part parity errors** -> the baseline is parity-clean, so any new parity error will be ours.
+- Power path: J10 -> F1 (5x20 fuse) -> PRE_24 (D19 SMBJ30CA TVS, C13/C14) -> Q3 CSD19537 (reverse-polarity FET, driven by U3 B_GATE, Q8 BSS138 helper) -> U3 TPS26630 eFuse -> +24V rail. U3 PGOOD enables the RT7272 5 V buck (U2, R22 24k pull-up to +24V).
+- U3 signals IMON / FLT / SHDN go only to test points (not read by firmware). Only PGOOD is functionally used (buck enable).
+- +24V feeds directly: 5 solenoid/relay drivers (low-side Si2318 + SS54 flyback + SMBJ30CA TVS + indicator LED), TMC2209 stepper driver (VS limit ~29 V, verify), 4-20 mA pressure loops, RT7272 buck, test points.
+- 3.3 V comes from U7 LDL1117 (5 V -> 3.3 V). ESP32-S3-WROOM-1-N16R8 module on 41 pads; 24 GPIOs + USB + EN/BOOT used.
+
+## 3. Verification method (what "vetted and tested" means here)
+| Level | What it proves | Tool | Who |
+|---|---|---|---|
+| V1 netlist diff | Only the intended parts/nets changed; every other net has identical pins | `tools/netdiff.py baseline/rev_c1.xml new.xml` | Claude, after every edit |
+| V2 ERC | No new electrical-rule errors | `kicad-cli sch erc` | Claude |
+| V3 DRC + parity | Board matches schematic, no clearance/connectivity errors | `kicad-cli pcb drc --schematic-parity` | Claude |
+| V4 calculation | Each re-rated or re-valued part is within its datasheet limits with margin | Python worksheet per change, datasheet page cited | Claude |
+| V5 vendor check | Part is Basic/Promo, in stock, not "Standard Only" at JLCPCB | live JLCPCB quote | Claude |
+| V6 bench test | The physical board behaves like Rev-C1 | `docs/BRINGUP_TEST_PLAN.md` (to be written) on a current-limited supply | **Sascha - Claude cannot do this** |
+Nothing is marked "verified" without V1-V5; V6 results are recorded by the user. No order is placed before V6 on the first 2 boards.
+
+## 4. Change register (draft; every row needs V1-V5 before layout is accepted)
+Risk: R0 no electrical change; R1 re-rating only; R2 different part, same function; R3 function or architecture change.
+
+| ID | Sheet | Change | Risk | Why | Open checks |
+|---|---|---|---|---|---|
+| C-01 | Power | Remove U3 TPS26630, Q3, Q8, R72-R77, R21, R75, C15, TP50-52; add reverse-polarity P-FET with gate resistor + zener | **R3** | Biggest cost item; its OVP/UVLO matter less at 12 V; IMON/FLT/SHDN unused | P-FET Vds >= 30 V, Id >= fuse, Rds(on) at 11 V; behaviour with battery reversed; U2 EN must still start (R22 pull-up) |
+| C-02 | Power | D19 SMBJ30CA -> unidirectional ~16 V standoff TVS (e.g. SMBJ16A class) | R1 | At 12 V the TVS clamp can sit below every part's limit (TMC2209 ~29 V) | Pick fee-free part; clamp voltage vs TMC2209 abs max; leakage at 14.8 V |
+| C-03 | Solenoid x5 | D15 etc. SMBJ30CA -> ~16 V class bidirectional TVS | R1 | Same reason; drain idles at the rail voltage | standoff > 15.5 V charge voltage |
+| C-04 | Solenoid x5 + Buzzer | Si2318 -> keep (default) or AO3400A (Basic, 30 V, Vth 1.45 V) | R2 | AO3400A is fee-free and better at 3.3 V gate drive; 30 V is enough once rail is 12 V | Rds(on) at Vgs=3.3 V, load current budget, SPICE/calc of switching with coil |
+| C-05 | ESP32 | Remove U5 module, J19 USB-C, SW1, SW2, U6, D40, U8 (and U7 if dev-board 3V3 used); add 2x 1x22 sockets for ESP32-S3-DevKitC-1; widen board ~28 mm | **R3** | Economic-eligible, removes 8 paid lines, removable/replaceable controller | Every GPIO mapped (done: all on headers); 3V3 source decision; v1.1 board (LED on GPIO38); power-OR with USB; antenna/keep-out irrelevant |
+| C-06 | Power | R26/R25 FB divider 62k/11.8k -> 62k/12k (5.00 V -> 4.93 V) only if 11.8k is kept paid; else retune | R2 | Fee-free value | 5 V rail tolerance of WS2812/servos |
+| C-07 | Stepper | 470 pF/100 V 47 pF part -> 470 pF/50 V X7R (Basic C1620) | R1 | Also fixes the 47 pF/470 pF BOM error found in Rev-C1 (GitHub issue #4) | motor-output clamp voltage < 50 V |
+| C-08 | Power | C18 2.7 nF -> 2.2 nF || 470 pF | R2 | Fee-free; keeps 2.67 nF compensation | loop stability unchanged |
+| C-09 | Flowmeter x2 | C3/C24 2.7 nF -> 2.2 nF | R1 | Fee-free | RC corner moves +20 % |
+| C-10 | ADC x4 | BAV199 -> BAV99 | R2 | Fee-free | leakage x R(10k) vs ADS1115 LSB |
+| C-11 | ESD | PESD3V3L1BA keep (SMF3.3CA rejected: 500 uA leakage) | R0 | | |
+| C-12 | various | Fee-free swaps from BOM v4b (diodes, resistors, caps, RS-485 SP3485, green LED 0805) | R1-R2 | JLCPCB $0 feeder fee | each needs V4 + V5 |
+| C-13 | Connectors | Standardise (see 5) | R1 | fewer unique lines, one mating cable family | current rating vs load |
+| C-14 | Power | +24V net/labels renamed +12V; LED indicator resistors rechecked for 12 V | R0/R1 | 12 V rail | LED current at 11-15 V |
+
+## 5. Connector standard (assumption until confirmed)
+Assumed "3 families": 3.5 mm pluggable 2-pin (power in + 5 outputs), JST-PH 3-pin (sensors, RS-485, TDS, DS18B20), JST-PH 4-pin (stepper); keep 2.54 mm servo headers. Rev-C1 has 8 connector part numbers. JLCPCB's fee-free list has **no** connectors, so each remaining family costs one paid line (~$2.3 per order).
+
+## 5b. Decisions (Sascha, 2026-10-28)
+- Keep the Rev-C1 current envelope: board stays a ~3 A device (3.15 A input fuse, 3 A per output driver). No up-rating of fuse/FET/traces/connectors.
+- Scope of the redesign = (a) drop 24 V and the eFuse, (b) size every part to the 12 V / 3 A envelope and pick the cheapest Basic/Promo equivalents, (c) replace the ESP32 module with sockets for the dev board, which will likely need a larger board outline.
+
+## 6. Assumptions and open items (Sascha to confirm)
+1. 4-20 mA sensors need <= 10 V at their terminals. At 12 V the sensor sees (Vbus - 2 V at 20 mA); at 11 V battery that is 9 V. **If a sensor needs 12 V minimum this fails** -> would need a boost for the loop supply (R3).
+2. Upstream spec (brineomatic.com Rev C page): 5 relay/solenoid outputs "3 A max each", stepper 1.5 A, 2 servos 3 A each, input fuse 3.15 A (5x20), eFuse 4 A internal limit. So Rev-C1's *whole board* is capped at ~3.15 A by the fuse (at 12 V and 24 V alike); the per-output 3 A is a driver rating, not a simultaneous budget. If your solenoids really draw >3 A (or >6 A total) the Rev-C1 power path itself is undersized, independent of 12 V -> needs a different fuse/FET/trace/connector design (decision pending with Sascha).
+3. Stepper motor is rated for 12 V operation; torque at speed will be lower than at 24 V.
+4. Output loads are 12 V relays/solenoids.
+5. Wiring a 12 V-only board to 24 V will blow the fuse / TVS: needs a printed warning.
+6. JLCPCB currently shows ADS1115 (C37593) out of stock; no pin-compatible replacement chosen yet.
+
+## 7. Work order
+1. (done) project copy, baseline netlist/ERC/DRC/parity, netdiff tool.
+2. Part vetting worksheets (V4/V5) for C-01..C-14 -> `docs/VETTING.md`.
+3. Schematic edits by script, V1 after each edit, ERC.
+4. PCB edit with pcbnew (remove parts, widen board, place sockets/new parts, route only the changed nets), DRC + parity.
+5. Gerber/BOM/CPL export, Economic quote, JLCPCB DFM.
+6. `docs/BRINGUP_TEST_PLAN.md`; user builds 2 boards and runs V6 before any larger order.
+
+## 8. Progress log
+- 2026-10-28 step 1 DONE (schematic only, PCB not yet touched): `tools/edit_power.py` applied to kicad/power_supply.kicad_sch (+ net rename in solenoid_driver, pressure_sensor, tmc2209).
+  - netdiff vs Rev-C1 (`baseline/rev_d_step1.xml`): removed exactly C15,Q3,Q8,R21,R72-R77,TP50-52,U3; added Q9,Q10 (AO3401A C15127), R78 (10k C25804), D56 (BZT52C10 C19077408); D19 SMBJ30CA -> SMBJ16A C19077571 (K now on PRE_24, A on GND); +24V net renamed +12V with identical pin membership (plus Q9/Q10 drains, minus R75/U3); PRE_24 now = F1, C13/C14, D19.K, D56.K, Q9.S, Q10.S; PGOOD still R22 + U2 EN (buck enable now simply pulled up).
+  - ERC (`baseline/rev_d_step1_erc.json`): no new violation types; only the library/footprint-link warnings that Rev-C1 also has.
+  - NOT yet done: output TVS (D15 etc., still SMBJ30CA, inert at 12 V), LED resistor re-check, C-04..C-14 swaps, ESP32 dev-board sockets, connectors, any PCB edit (kicad_pcb is still the Rev-C1 board, so parity DRC will now report removed/added parts until step 2).
+
+- 2026-10-28 step 2 DONE (schematic, ESP32 sheet): `tools/edit_esp32.py`. U5 module -> DevKitC-1 socket symbol (same pin numbers, so all 24 GPIO nets keep their labels; added pin 42 = 5V; pin 2 = 3V3 now power_out). Removed J19 USB-C, SW1/SW2, U6, D37/D38, C37-C40/C42/C43, R43-R50/R52/R53, D40, U8, FB1, D36, J20, TP27-29, **U7 (+3.3V now comes from the dev-board LDO)**. Added D57 SS34 in series with the dev-board 5V pin (Espressif: "USB ports and the 5V pin should not be used together" - the diode stops our buck and USB from back-feeding each other). netdiff vs step 1: only those removals + D57, no signal-net pin changed. ERC: only library-link warnings.
+- 2026-10-28 step 3 PARTLY DONE (PCB): `tools/pcb_sync_structure.py` + `tools/pcb_sync_nets.py`. Board now parity-clean vs schematic (DRC `--schematic-parity`: 0 part/net errors; only the 199 Rev-C1 field-mismatch warnings). Outline widened west to x=34 (board 135 x 63.5 mm), 2x 1x22 sockets for the dev board at x=38/60.86 (`brineomatic_local.pretty`), new Q9/Q10/R78/D56 placed provisionally near the old eFuse spot, D57 placed provisionally at bottom-left of the socket strip.
+  **NOT routed yet.** DRC: 52 unconnected (all socket/new-part nets), 92 dangling stubs left from deleted parts, 5 shorts and 5 courtyard overlaps from the provisional placement of Q9/Q10/R78/D56, plus clearance/silk items. Needs: clean up stubs, final placement, routing of ~30 socket nets (the old module escape tracks end in the old module area x 63-91), zone refill. No autorouter or Java on this Mac; either route in the KiCad GUI or approve installing Java + Freerouting.
+
+- 2026-10-28 step 4 DONE (autorouting): Freerouting 2.5.0 (jar + Temurin JRE 25, in the scratchpad, checksums verified; the native CLI build crashed) routed all 24 GPIO/signal nets from the new sockets plus the leftover nets. `kicad/brineomatic.kicad_pcb` now: parity DRC 0 part/net errors; 0 shorts; 0 dangling; 1 clearance (0.185 vs 0.200 mm, SOLENOID1 In2 track vs a +3.3V via at 76.4,49.7); 4 hole_clearance (the 4 Rev-C1 standoff pads); silk-only items; 16 unconnected = ratsnest still to route:
+  * 7 in the new reverse-polarity cluster (Q9/Q10/D56/R78: PRE_24 x4, PFET_G x3) - deliberately left unrouted because the autorouter produced a short there and my hand-route hit inner-layer signals (through-vias). Needs ~10 min in the KiCad GUI.
+  * 9 power-distribution gaps in +5V (2) and +3.3V (7) where the removed U7/module pads used to tie copper islands together (around x 72-124, y 35-77). The dev-board 3V3/5V pins reach their nets via the zones; these gaps need short jumpers.
+  Preview: docs/rev_d_pcb_step5_top.png. Tools: tools/pcb_sync_structure.py, pcb_sync_nets.py, pcb_cleanup.py, pcb_place_power.py, pcb_route_power.py (the last is the abandoned hand-route attempt).
+
+- 2026-10-28 step 5 DONE (routing round 2): Freerouting re-run from the pre-route board with In2 declared a power plane (stops signal tracks from slicing the +3.3V/+5V planes), then a leftover pass for EN and TMC2209_STEP; +3.3V/+5V planes patched under the socket strip; D19 GND jumper added; sub-0.2 mm tracks widened. `kicad/brineomatic.kicad_pcb` (preview docs/rev_d_pcb_step6_top.png): schematic parity clean; 9 unrouted left:
+  * 7 in the Q9/Q10/D56/R78 reverse-polarity cluster (PRE_24 x4 incl. zone, PFET_G x3) - hand-route in the KiCad GUI.
+  * 1 GND island: Q4 source pad + R33.1 (solenoid-2 driver, ~116.4,73.5) is not tied to the main GND plane - **must be fixed, otherwise relay 2 has no ground**.
+  * 1 +3.3V: D9 pad 2 (111.7,48.0) to a track at (123.4,36.7).
+  Remaining DRC: 13 clearance of 0.16-0.196 mm vs 0.200 (autorouter ran slightly tight vs board rules), FID1 near a via, 5 hole_clearance (standoffs, pre-existing), silk items, 2 copper slivers, 1 zone intersect.
+
+- 2026-10-29 step 6 DONE (part swaps + review): `tools/edit_swaps.py`, `edit_fet_fix.py`, `pcb_swap_fp.py`, `make_jlc.py`. Full list in docs/CHANGE_REGISTER.md; bench plan in docs/BRINGUP_TEST_PLAN.md. **Review finding:** the first reverse-polarity stage had the P-FET source on the battery side (body diode would have conducted on a reversed battery) and D19 was unidirectional (would have shorted a reversed battery through F1). Both fixed (drain on battery side, SMBJ16CA bidirectional); the power cluster on the PCB is still unrouted and now has the correct pad nets. ERC clean; PCB parity clean (0 part/net errors); 12 unrouted. BOM mfg/BOM-rev_d.csv = 60 lines (Rev-C1 Economic v4b was ~71), CPL mfg/CPL-rev_d.csv (186 SMD rows; THT parts are in the BOM only). Not done: JLCPCB DFM/quote of this BOM.
+
+- 2026-10-29 step 7 DONE (routing finished): D56/R78 re-placed in free space, Freerouting for the cluster, grid router `tools/astar_route.py` for the last two links (D9 +3.3V feed to the right-hand 3.3V island incl. TMC2209 VIO, PRE_24 island link), via searches for the R78 and Q4 grounds and D56 +12V. DRC (`baseline/rev_d_step10_drc.json`): 0 unconnected, 0 shorting, 0 crossing, 0 dangling; schematic parity clean; ERC clean. Two review-found bugs on the way: vias drawn 0.2 mm drill (min is 0.3) and one via shorting TMC2209_RX - both fixed, and the helper scripts now count shorts/crossings strictly. Remaining DRC: 13 clearance 0.16-0.196 vs 0.2 mm, FID1 vs via, 5 standoff hole, 2 slivers, silk. Preview docs/rev_d_pcb_final_top.png.
+
+- 2026-10-30 JLCPCB Economic quote (5 boards, top side, 4L 135x63.5, HASL leaded default, green; BOM-rev_d.csv 60 lines all matched/in stock, CPL 205 rows, nothing saved to cart/ordered; the quote is in the JLCPCB account under Projects > Quotes "rev_d_gerbers"): **Total $187.73** = PCB $30.30 (engineering 25.00 + board 5.30) + Economic PCBA $157.43 (setup 8.24, stencil 1.55, components 85.02, extended-components fee 49.44, SMT 4.27, hand-soldering 3.61, manual assembly 4.39, nitrogen reflow 0.91); weight 1.06 kg; build 3 days PCB + 3-4 days assembly. Excludes 5 ESP32-S3-DevKitC-1 v1.1 (~$33), shipping, loose plugs/fuse. First BOM pass found C21/C23 220uF C2977551 'Standard Only' (fixed: C2887273 6.3x7.7, footprint swapped) and R25 62k C137694 3 short (fixed: C23221). Silkscreen text fix (24V -> 12V, REV C1 -> REV D 12V) had been lost when an older board copy was restored; re-applied after the quote so the gerbers uploaded for the quote still carry the old text - regenerated gerbers are in mfg/.
+
+- 2026-10-30 clearance clean-up: `tools/nudge.py` moved the offending vias and FID1 (DRC-scored), the +5V track near the SERVO1 socket pad was shifted 0.12 mm, the +3.3V In2 patch zone got its own priority. DRC now: 0 unconnected, 0 clearance, 4 hole_clearance + 4 solder_mask_bridge (the four standoff pads, same as Rev-C1), 2 copper slivers, silkscreen overlaps; parity clean; ERC clean. Gerbers/BOM/CPL in mfg/ regenerated (silkscreen reads 12V / REV D 12V). The JLCPCB quote ($187.72) was made with the earlier gerbers; the price should not change.
+
+- 2026-10-31 user feedback round (3 issues) + re-quote:
+  1. **ESP32 sockets were missing from the BOM/CPL** (U5 was excluded as "dev board supplied by user"). Added BOM line "Female header 1x22 2.54mm 8.5mm" C41376161 (HC-PM254-8.5H-1x22PZ, 19k in stock) designators U5A,U5B + CPL rows. NOTE: on JLCPCB the row comes up UNSELECTED (red, "multiple types of parts") - it must be ticked manually on the BOM step or the sockets are not assembled (qty 10, $2.26 for 5 boards). The 5 dev boards themselves are still not assembled.
+  2. Connectors standardised: all JST PH (2/3/4 pin, C2319/C2320/C2321, now vertical THT same 2 mm hole pattern, J23 RS-485 3.5 mm 3-pin -> PH-3 incl. re-routing; loose plug J24 removed) + 3.5 mm 2-pin pluggable for power/outputs (3 A) + 2x3 servo headers + JST-SH I2C (J2). Lines: 7 -> 4 connector LCSC codes. Mechanical change: cables now leave upwards, not sideways; courtyard overlaps (9) of the taller vertical housings with neighbouring SMD parts near the top edge need a look in KiCad.
+  3. Extended-parts fee: swaps done: LEDs green->red 0603 C2286 (Basic), Si2318->AO3400A C20917 (Basic, 30V fine at 12V), B5819W->1N4148W C81598, e-caps C21/C23 -> C3342, C57 100uF/35V -> 47uF/50V C3349 (6.3x7.7, 47 uF is a real change), SMBJ/SMF etc unchanged.
+  **Quote (JLCPCB Economic, 5 boards, 59 BOM lines incl. sockets): total $175.20** = PCB 30.30 + PCBA 144.90 (components 75.12, extended-components fee 43.26, setup 8.24, stencil 1.55, SMT 4.12, hand-soldering 3.61, manual assembly 8.09, nitrogen 0.91); weight 1.12 kg. Previous quote $187.73 (fee 49.44). The fee only dropped $6.18: the basic_parts list I scraped is NOT a reliable fee-free test (parts listed there, e.g. PH-xA / C3342, did not visibly lower the fee); only a re-quote shows the real effect. ~19 extended lines are still charged (~$2.3 each).
+
+- 2026-10-31 OPEN (work paused: usage limit reached, resets 2026-11-01 00:00 UTC):
+  a) Screw-terminal option instead of JST-PH crimp connectors: 3.5 mm pluggable (same family as the outputs: 2P C5188295 board + C5188249 plug, 3P C5188296 + C5188250 plug; 4P and 5.0/3.81 mm variants not yet looked up). Board-side cost from the quotes: 2P ~$0.04/pc, 3P ~$0.06/pc (vs PH-3A ~$0.01/pc); each extra pin-count = one more extended line (~$2.3/order) and the cable-side plugs are loose parts (not assembled). Footprints are wider (3.5 mm pitch: 3P ~10.5 mm, 4P ~14 mm vs 6-8 mm for PH) and the 9 top-edge sensor/stepper connectors J3,J4,J5,J11,J18,J21,J22 would need a re-layout along the top edge. Wanted: price difference from a real re-quote (5 boards).
+  b) Find which extended lines are really charged: use the JLCPCB parts-search "Parts Type = Promotional Extended" filter per LCSC code (or re-quote with line groups removed) and swap/drop the charged ones. Candidates still extended-labelled: BZ1, C21/C23 (C3342), C57 (C3349), D1/D2/D10, PESD x12, BAT54S, SMBJ16CA, PSD12C, SMF30CA, BZT52C10, F1, F2, FB2-5, J1/J6, J2, PH-2/3/4, J7.., L2, R3/R41, R25, R57/R60, U1, U2, U4, U9, sockets.
+
+- 2026-11-01 extended-fee line-by-line test (JLCPCB quote saved project, deselect one BOM line at a time, read "Extended components fee"; harness = JS clicking checkboxes + NEXT). Unit = **$3.09 per charged line**; baseline fee $43.26 = 14 charged lines. Results so far (13 of 28 extended-labelled lines tested):
+  CHARGED: C3342 (220uF e-cap), C3349 (47uF e-cap), C2687129 (PESD3V3L1BA), C5199854 (PSD12C), C70129 (mSMD260 PTC).
+  FREE (no change in fee): C96256 buzzer, C2925443 SMAJ5.0A, C7420333 BAT54S, C19077572 SMBJ16CA, C2990493 SMF30CA, C19077408 BZT52C10, C206887 fuse holder.
+  Still to test: C394425 FB, C239334 2x3 hdr, C160390 JST-SH, C2319/C2320/C2321 PH, C5188295 3.5mm, C177249 L2, C728670 R3, C23221 R25, C327071 R57, C37593 ADS1115, C127866 RT7272, C2649430 MAX40200, C2150710 TMC2209, C41376161 socket.
+
+- 2026-11-01 extended-fee test COMPLETE (unit $3.09 per charged line; 14 charged lines = $43.26). CHARGED: C3342 + C3349 (the two e-cap lines), C2687129 PESD3V3L1BA, C5199854 PSD12C, C70129 mSMD260, C394425 ferrites FB2-5, C160390 JST-SH J2, C177249 L2 6.8uH, C728670 R3/R41 100R 0.1%, C327071 R57/R60 0.11R, C37593 ADS1115, C127866 RT7272, C2649430 MAX40200 (+ TMC2209 C2150710 by count; the page froze before that last reading, the socket line is the other candidate but is expected free).
+  FREE (extended-labelled but no fee): buzzer C96256, SMAJ C2925443, BAT54S C7420333, SMBJ16CA C19077572, SMF30CA C2990493, BZT52C10 C19077408, fuse holder C206887, 2x3 header C239334, **JST-PH C2319/C2320/C2321 and 3.5 mm terminal C5188295**, R25 62k C23221 (so C23221 could go back to basic list value, irrelevant).
+  => connector choice does NOT change the fee. Board-side prices from the quote: PH-2A $0.006, PH-3A $0.010, PH-4A $0.011, 3.5 mm 2P $0.041 each.
+  Candidate savings (each $3.09 per order): J2 SH->PH-4 (needs re-layout), R3/R41 0.1% -> 1% (calibrate in firmware), FB2-5 -> drop/0R (loses EMI filter), R57/R60 0.11R -> 0.1R basic (+9% motor current setting), e-caps -> ceramics (changes bulk capacitance). No fee-free alternative found for ADS1115, RT7272, MAX40200, TMC2209, L2, mSMD260, PESD3V3L1BA, PSD12C.
+
+- 2026-11-01 3.5 mm screw-terminal attempt for J3,J4,J5,J11,J18,J21,J22,J23 (LCSC 2P C5188295, 3P C5188296, 4P C5188297, all fee-free): schematic/BOM swap works (tools/edit_swaps3.py) but the board does not fit: with the PH positions kept, 3P terminals (courtyard ~12 mm) overlap each other (pitch 9.5-10.7 mm), J1 header and the mounting holes, and 59 escape tracks + 20 nets would need re-routing (137 clearance, 15 shorts, 33 unconnected after a rough automatic try; tools/pcb_screw.py). Reverted to the JST-PH board (DRC clean again). Needs a deliberate top-edge re-layout (spread connectors, move sensor circuits) or a narrower screw terminal (2.54 mm pitch fixed screw blocks).
+- 2026-10-31 step 15 DONE (screw terminals): all sensor/stepper connectors are now 3.5 mm pluggable screw terminals (J3,J18,J7,J10,J12,J14,J16,J25 2P C5188295; J4,J5,J11,J22,J23 3P C5188296; J21 4P C5188297). Board 135 x 84.5 mm (14->17 mm strip along the top for the terminals, 4 mm extra at the bottom for J23), outline x 34-169, y 12-96.5. Built by tools/pcb_screw2.py + pcb_prune_stubs.py + Freerouting (In2 power) + astar leftovers + extra In2 +5V zone under the strip; DRC: 0 unconnected, 0 shorts/clearance; old JST-PH version kept at scratchpad bak4_jstph. BOM mfg/BOM-rev_d.csv (58 lines) + variant with cable plugs BOM-rev_d_with_plugs.csv/CPL (plugs C5188249/50/51, all Extended = up to +3 fee lines); gerbers mfg/rev_d_screw_gerbers.zip. NOT yet re-quoted at JLCPCB; plug placement on top of the terminals untested.
+- 2026-10-31 JLCPCB quote of the screw-terminal board (Economic, top side, qty 5, 58 BOM lines): PCB $32.10 (eng. fee $25 + board $7.10) + PCBA $145.42 (components $75.76, extended fee $43.26 = 14 lines, SMT $4.12, setup $8.24, stencil $1.55, hand-soldering $3.61, manual assembly $7.97, nitrogen $0.91) = **$177.52** (JST-PH version was $175.20, +$2.32). Placing the cable plugs via BOM/CPL (C5188249/50/51 at the terminal positions) matched and placed in the viewer but "Quote & Order" failed with "fee item calculate failed" -> plugs cannot be assembled this way; buy at LCSC. Fixed on the way: socket CPL rotation must be 90 (rot 0 laid the row horizontally). The JLC draft "rev_d_screw_gerbers" currently holds the plug variant (not in the cart; re-upload BOM-rev_d.csv + CPL-rev_d.csv to restore).
+- 2026-10-31 CPL fix: the screw terminals appeared shifted by half their width in JLC's placement viewer (J21 stuck out past the board edge) because KiCad's position file gives the pin-1 origin and JLC expects the centre. make_jlc.py now writes the centre of the pin row for the 3.5 mm terminals (x +/- (n-1)*1.75 mm depending on rotation 180/0). Verified in the viewer: all bodies sit on their pins inside the outline. The KiCad board itself was always correct (all courtyards inside the outline). JLC draft "rev_d_screw_gerbers" again holds BOM-rev_d.csv + CPL-rev_d.csv (no plugs). Still to eyeball in the viewer: J1/J6 horizontal headers and the buzzer/fuse holder/electrolytic caps (same pin-1-origin risk).

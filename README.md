@@ -1,3 +1,5 @@
+> **Fork note (experimental 12 V variant, not an official revision).** The branch `rev-d-12v` of this fork contains **Rev D**: a 12 V-only, Economic-PCBA-friendly variant of Rev-C1 (ESP32-S3 dev-board sockets, no eFuse, fee-free parts, 3.5 mm screw terminals). It has **not been built or bench-tested**. Goals, every change vs Rev-C1 with due diligence, and the complete audit are in [`rev-d-12v/docs/`](rev-d-12v/docs/GOALS.md). The KiCad project in `brineomatic/` is modified in place, so `git diff Rev-C1` shows the changes; schematic sheets that did not change logically were re-saved by a scripted editor and show formatting-only diffs.
+
 ![Hardware: Open Source](https://img.shields.io/badge/Hardware-Open%20Source-brightgreen?logo=opensourcehardware&logoColor=white)
 ![Status: Active](https://img.shields.io/badge/Status-Active-success.svg)
 ![Web UI](https://img.shields.io/badge/Web%20UI-HTML5%20%2B%20Bootstrap5-blue?logo=googlechrome&logoColor=white)
