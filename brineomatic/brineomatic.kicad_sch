@@ -913,7 +913,6 @@
   (no_connect (at 266.7 48.26) (uuid 7c6ef08b-f3bb-42b2-8291-6bcc116a806b))
   (no_connect (at 266.7 78.74) (uuid 847e8426-6581-4584-8a58-6acfa4ff0681))
   (no_connect (at 266.7 66.04) (uuid 8d1f07a2-f567-4d50-b656-e36145513924))
-  (no_connect (at 59.69 49.53) (uuid 9733af01-4b83-4cc4-874e-af9d9daf7871))
   (no_connect (at 266.7 33.02) (uuid 99210041-3ae9-499f-905f-274bff6f9fb2))
   (no_connect (at 266.7 96.52) (uuid a272e0fb-9274-4b01-b860-bfe2b2d5a7db))
   (no_connect (at 266.7 63.5) (uuid e1e0ff26-f271-4212-9ccf-4108942ec0e3))
@@ -2511,10 +2510,6 @@
     (pin "INDEX" output (at 80.01 44.45 0)
       (effects (font (size 1.27 1.27)) (justify right))
       (uuid b79b07ae-893c-41cc-bdae-5d72eaa32e3b)
-    )
-    (pin "SPREAD" input (at 59.69 49.53 180)
-      (effects (font (size 1.27 1.27)) (justify left))
-      (uuid 87494046-1f84-41ad-92f5-7e387d46c4cd)
     )
     (instances
       (project "brineomatic"

@@ -6,4 +6,4 @@ Start with [`docs/GOALS.md`](docs/GOALS.md), then [`docs/CHANGE_REGISTER.md`](do
 
 **Status: untested design proposal.** See the open items at the end of the register.
 
-**Branch `rev-d-12v-stepper-socket` (12 Nov 2026):** the TMC2209 chip is replaced by sockets for a BIGTREETECH TMC2209 V1.3 module. See [`docs/STEPPER_SOCKET.md`](docs/STEPPER_SOCKET.md). The schematic has not been updated for this step yet; the PCB, BOM and CPL have.
+**Branch `rev-d-12v-stepper-socket` (12 Nov 2026):** the TMC2209 chip is replaced by sockets for a BIGTREETECH TMC2209 V1.3 module. See [`docs/STEPPER_SOCKET.md`](docs/STEPPER_SOCKET.md). Schematic, PCB, BOM and CPL are updated and agree.

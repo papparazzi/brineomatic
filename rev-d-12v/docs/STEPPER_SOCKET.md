@@ -1,6 +1,6 @@
 # Rev D step 18: TMC2209 chip -> socketed BIGTREETECH TMC2209 V1.3 module
 
-12 Nov 2026. Branch `rev-d-12v-stepper-socket`, on top of `rev-d-12v` (217fe22). **Untested. No human has reviewed the layout. The schematic is not updated yet (see Open items).**
+12 Nov 2026. Branch `rev-d-12v-stepper-socket`, on top of `rev-d-12v` (217fe22). **Untested. No human has reviewed the layout.** Schematic, board, BOM and CPL agree (section 4).
 
 Goal: the stepper driver becomes a plug-in part like the ESP32 dev board, so a dead driver is swapped in a minute, and two fee-bearing lines
 (TMC2209-LA C2150710, 0.11R C327071) leave the assembly BOM. Rule used: no part leaves the board unless its replacement is named here.
@@ -67,7 +67,10 @@ Copper changed outside the removed parts:
 - KiCad 10 DRC (`baseline/rev_d_step18_drc.json`): **0 unconnected, 0 clearance, 0 shorts.** Unchanged from before: 4 hole-clearance + 4 mask-bridge (standoff pads), silkscreen warnings, 1 dangling track, 1 dangling via.
   New: 5 courtyard overlaps, all with the socket strips (see 5).
 - Pad-net audit against the previous board: 0 net changes on any kept part; removed parts exactly the 7 passives + chip above; U9 pads as in the table.
-- Not done: ERC / schematic parity (schematic not updated), 3D fit check, any bench test.
+- Schematic updated (`tools/sch_stepper_socket.py`): U9 symbol replaced by a module symbol with the same pin positions, the 7 parts removed, 31 dangling wires / junctions / power symbols / the SPREAD label pruned (list printed by the script), unused SPREAD sheet pin removed from the root sheet.
+  ERC (`baseline/rev_d_step18_erc.json`): **0 errors**. DRC with schematic parity: only the 199 stale `LCSC` field warnings that step 17 already had; every pad net on the board equals the schematic netlist.
+- BOM and CPL cross-checked against the schematic netlist: 199 assembled parts in each, none missing, none extra, no LCSC code differs.
+- Not done: 3D fit check, any bench test.
 
 ## 5. Tight fits to check before ordering
 
@@ -92,7 +95,7 @@ Solder the sockets after the SMD parts. Height under the module: filter parts ar
 
 ## 7. Open items
 
-1. **Schematic `tmc2209.kicad_sch` still shows the chip.** PCB and schematic disagree until it is redrawn; BOM/CPL were edited directly. Do this before the next change.
+1. Schematic sheets show every hidden field (footprint, datasheet, description) as visible text. This predates step 18 (the `hide` flags were lost in an earlier scripted edit: 264 in Rev-C1, 0 in step 17). Cosmetic, but the sheets are hard to read.
 2. Human review of this corner in KiCad (motor row x 143-161, y 41.4; pours around C46/C51; the long EN/STEP/DIR runs on the west side and TX/DIAG on the east side, 60-75 mm each).
 3. Choose and verify socket parts; add them to BOM/CPL; regenerate gerbers; re-quote.
 4. On the first module: check which of the two extra pins is DIAG (meter to the chip pin), and that it is soldered pointing down.
@@ -105,6 +108,9 @@ KiCad 10 Python, from the repository root, starting from the step-17 board (`git
 
     python rev-d-12v/tools/pcb_stepper_socket.py step17.kicad_pcb step18a.kicad_pcb
     python rev-d-12v/tools/pcb_apply_route_spec.py step18a.kicad_pcb rev-d-12v/baseline/rev_d_step18_autoroute.json brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/sch_stepper_socket.py tmc2209_step17.kicad_sch brineomatic/tmc2209.kicad_sch root_step17.kicad_sch brineomatic/brineomatic.kicad_sch
+
+After that the board's U9 value and the nets of pads 5 (TX, unconnected) and 17 (INDEX) were set to match the schematic.
 
 `pcb_merge_routed_nets.py` is the helper that extracted the five autorouted nets from the Freerouting result.
 

@@ -5603,7 +5603,7 @@
 				)
 			)
 		)
-		(property "Value" "BTT TMC2209 V1.3 module (socketed)"
+		(property "Value" "BTT TMC2209 V1.3 module"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -5743,6 +5743,7 @@
 			(drill 1)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
+			(net "unconnected-(U9-TX-Pad5)")
 			(pinfunction "TX")
 			(uuid "9776d75f-83a3-4870-a9e7-31ea0b8480c8")
 		)
@@ -5862,6 +5863,7 @@
 			(drill 1)
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
+			(net "/Stepper Driver/INDEX")
 			(pinfunction "INDEX")
 			(uuid "350f4f3b-28b6-4227-92dd-c76f4e1f784f")
 		)
