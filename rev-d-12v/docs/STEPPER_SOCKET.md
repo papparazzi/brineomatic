@@ -89,15 +89,17 @@ Solder the sockets after the SMD parts. Height under the module: filter parts ar
 
 - `mfg/BOM-rev_d*.csv`: U9, R57, R60, C48, C45, C47, R58, R59 removed (57 -> 53 lines; the charged Extended lines C2150710 and C327071 are gone: 14 -> 12 charged lines, about US$6 less fee, **not re-quoted**).
 - `mfg/CPL-rev_d*.csv`: the 8 parts removed, 11 moved parts updated from the PCB.
-- **Not in the BOM yet: two 1x8 and one 1x2 female headers (2.54 mm, 8.5 mm high) for the module.** No LCSC part has been chosen and checked; until then they are hand-soldered.
-- Gerbers in `mfg/` are **stale** (still step 17). Regenerate before any order.
+- Sockets added to BOM and CPL (JLCPCB parts API, 12 Nov 2026), same HongCheng HC-PM254-8.5H series as the dev-board sockets C41376161:
+  U9A, U9B = **C22373894** HC-PM254-8.5H-1x8PZ (stock 1,597, US$0.11); U9C = **C22373888** HC-PM254-8.5H-1x2PZ-02A (stock 3,099, US$0.06). Both are Extended parts (2 more charged lines unless JLCPCB waives them).
+  CPL: U9A 152.01 / -28.70 rot 0, U9B 152.01 / -41.40 rot 0, U9C 160.90 / -32.51 rot 90 (row centres; rotation by analogy with the dev-board rows, **not yet checked in JLCPCB's viewer**). Body width of this series not read from a datasheet.
+- `mfg/gerbers-rev_d_step18.zip`: gerbers (4 copper layers, mask, paste, silkscreen, outline) and PTH/NPTH drill files exported from the step-18 board with KiCad 10.0.6. Not yet uploaded to JLCPCB; not re-quoted.
 - Modules: BIGTREETECH TMC2209 V1.3, about S$4.78 each on AliExpress (12 Nov 2026).
 
 ## 7. Open items
 
 1. Schematic sheets show every hidden field (footprint, datasheet, description) as visible text. This predates step 18 (the `hide` flags were lost in an earlier scripted edit: 264 in Rev-C1, 0 in step 17). Cosmetic, but the sheets are hard to read.
 2. Human review of this corner in KiCad (motor row x 143-161, y 41.4; pours around C46/C51; the long EN/STEP/DIR runs on the west side and TX/DIAG on the east side, 60-75 mm each).
-3. Choose and verify socket parts; add them to BOM/CPL; regenerate gerbers; re-quote.
+3. Upload gerbers, BOM and CPL to JLCPCB: tick the socket lines if they come up unselected, check socket placement and rotation in the viewer, re-quote.
 4. On the first module: check which of the two extra pins is DIAG (meter to the chip pin), and that it is soldered pointing down.
 5. BTT rates the module from 12 V; a sagging battery is at the bottom of that range (the chip itself works from 4.75 V). Bring-up step 9 covers it.
 6. Add to `BRINGUP_TEST_PLAN.md`: VREF trimmer to 1.67 V; UART read of the driver; DIAG stall signal; motor phase order/direction against Rev-C1.

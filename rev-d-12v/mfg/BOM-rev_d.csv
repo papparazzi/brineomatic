@@ -52,3 +52,5 @@ SS34,"D14, D26, D29, D32, D47, D49, D57",D_SMA,C8678
 SP3485EN,U10,SOIC-8_3.9x4.9mm_P1.27mm,C8963
 Buzzer,BZ1,MagneticBuzzer_QMB-09B-03,C96256
 Female header 1x22 2.54mm 8.5mm,"U5A, U5B",PinSocket_1x22_P2.54mm_Vertical,C41376161
+Female header 1x8 2.54mm 8.5mm,"U9A, U9B",PinSocket_1x08_P2.54mm_Vertical,C22373894
+Female header 1x2 2.54mm 8.5mm,U9C,PinSocket_1x02_P2.54mm_Vertical,C22373888

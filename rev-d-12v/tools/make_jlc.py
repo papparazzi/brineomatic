@@ -3,7 +3,7 @@ import sys, csv, subprocess, collections, re, xml.etree.ElementTree as ET, os
 xmlf, pcb, out = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
 root = ET.parse(xmlf).getroot()
-SKIP = ('TP', 'H', 'FID', 'SYM', 'U5')
+SKIP = ('TP', 'H', 'FID', 'SYM', 'U5', 'U9')
 groups = collections.defaultdict(list)
 CENTRE = {'F1': (157.6, 67.1)}   # courtyard centres measured with pcbnew (mm, KiCad y-down)
 placed = set(); loose = []
@@ -34,6 +34,8 @@ for lc, (refs, fps, _) in sorted(bylc.items(), key=lambda t: t[0]):
     rows.append([vals[refs[0]], ', '.join(refs), sorted(fps)[0], lc])
     if len(fps) > 1: print('MULTI FOOTPRINT', lc, fps)
 rows.append(['Female header 1x22 2.54mm 8.5mm', 'U5A, U5B', 'PinSocket_1x22_P2.54mm_Vertical', 'C41376161'])   # sockets for the ESP32-S3-DevKitC-1 (dev board itself is NOT assembled)
+rows.append(['Female header 1x8 2.54mm 8.5mm', 'U9A, U9B', 'PinSocket_1x08_P2.54mm_Vertical', 'C22373894'])   # sockets for the BTT TMC2209 V1.3 module (module itself is NOT assembled)
+rows.append(['Female header 1x2 2.54mm 8.5mm', 'U9C', 'PinSocket_1x02_P2.54mm_Vertical', 'C22373888'])     # DIAG / INDEX
 with open(out + '/BOM-rev_d.csv', 'w', newline='') as f:
     w = csv.writer(f); w.writerow(['Comment', 'Designator', 'Footprint', 'LCSC Part #']); w.writerows(rows)
 subprocess.run([os.path.expanduser('~/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli'), 'pcb', 'export', 'pos', '--format', 'csv', '--units', 'mm', '--side', 'front', '-o', out + '/_pos.csv', pcb], capture_output=True)
@@ -56,6 +58,7 @@ os.remove(out + '/_pos.csv')
 with open(out + '/CPL-rev_d.csv', 'a', newline='') as g:
     w = csv.writer(g)
     w.writerow(['U5A', '38.000000mm', '-60.370000mm', 'Top', '90']); w.writerow(['U5B', '60.860000mm', '-60.370000mm', 'Top', '90'])
+    w.writerow(['U9A', '152.010000mm', '-28.700000mm', 'Top', '0']); w.writerow(['U9B', '152.010000mm', '-41.400000mm', 'Top', '0']); w.writerow(['U9C', '160.900000mm', '-32.510000mm', 'Top', '90'])
 print('BOM lines', len(rows), 'placed parts', len(placed), 'CPL rows', n, 'loose', len(loose))
 json_ = [(r, v, l) for r, v, l in loose]
 print('loose parts (not in BOM):', json_)
