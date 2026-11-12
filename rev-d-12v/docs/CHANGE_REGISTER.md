@@ -76,3 +76,10 @@ ESP32 net names, TMC2209, RT7272, L2, MAX40200, ADS1115 (stock to be re-checked)
 ## H. Open items before ordering anything beyond 2 prototypes
 
 1. Human review of the layout in KiCad. 2. Remaining datasheet gaps (**DS?**): SMBJ16CA manufacturer PDF, buzzer PDF (coil resistance), SGM2212 and ESP32-S3 current figures. Everything else listed as DS was read from the manufacturer PDF on 2026-10-31. (TDS ESD diode placement: done, see `TDS_SIGNAL_ANALYSIS.md`.) 3. Bench test per `BRINGUP_TEST_PLAN.md`. 4. 12 V ONLY silkscreen warning; terminal pin-order labels. 5. New case. 6. (done) THT placement in JLC's viewer verified; the east-edge terminals J1/J6/J28/J29 sit correctly. 7. Re-upload the regenerated gerbers (`mfg/rev_d_screw_gerbers.zip`) - older zips are stale.
+
+## I. Step 18 (12 Nov 2026, branch `rev-d-12v-stepper-socket`): socketed stepper driver (R3)
+
+| ID | Change | Lost / gained | Due diligence | Open |
+|---|---|---|---|---|
+| I1 | U9 TMC2209-LA + R57, R60, C48, C45, C47, R58, R59 removed. Added sockets for a **BIGTREETECH TMC2209 V1.3 module** (footprint `BTT_TMC2209_V1.3_Socket`, ref U9) above the output filter. FB3, FB4, FB5, D53, C55, TP45, C54, C44, R1, R2, C46, C49 moved, nets unchanged. | Lost: fixed VREF (now the module trimmer). Gained: replaceable driver, 2 fewer charged Extended lines. | Geometry from BTT's size drawing (DS). DRC 0 unconnected / 0 clearance; pad-net audit 0 changes on kept parts. Full detail: `STEPPER_SOCKET.md`. | **Schematic not updated.** Sockets not in BOM. Gerbers stale. Tight fits listed in `STEPPER_SOCKET.md` section 5. No bench test. |
+| I2 | Filter -> J21 inner tracks 0.25 -> 0.40 mm, re-run between the socket pins. +5V inner track to the TDS terminals moved. 15 GND and 9 +12V vias removed, 1 GND via and 2 +12V plane links added. | Motor phase tracks are wider than before. | DRC as above. | Human layout review. |
