@@ -1,4 +1,4 @@
-# Rev D steps 19 and 20: pin labels, breakout pads, plug labels, 160 x 90 mm board
+# Rev D steps 19 to 21: pin labels, breakout pads, plug labels, 160 x 90 mm board, corner holes, credits, 12 V warning
 
 13 Nov 2026. Branch `rev-d-12v-labels`, on top of `rev-d-12v` step 17 (217fe22). The TMC2209 stays **soldered on the board as in Rev-C1**;
 the socketed-module variant (step 18) lives on branch `rev-d-12v-stepper-socket` and is not part of this branch.
@@ -11,7 +11,7 @@ the socketed-module variant (step 18) lives on branch `rev-d-12v-stepper-socket`
 |---|---|
 | Dev-board pin labels | All 44 header positions of the ESP32-S3-DevKitC-1 are named on the front silkscreen (1.0 mm text), outside the two socket rows so they stay readable with the dev board plugged in. Names follow Espressif's v1.1 header table (3V3, RST, GPIO numbers, 5V, GND, TX, RX). |
 | Breakout pads | A plated hole (1.0 mm hole, 1.6 mm pad, takes a standard pin or a wire) beside every dev-board pin the board does not use: RST, 3, 46, TX, RX, 38, 37, 36, 35, 0, 45, 20, 19, plus one 3V3 and one GND pad. 15 pads. Each has its name on the front and on the back. They are extra pads of U5 with the same pad number as the socket pin they belong to, joined to it by a 0.25 mm top-layer track, so the netlist is unchanged. |
-| Board outline (step 20, `tools/pcb_resize_160x90.py`) | **160.0 x 90.0 mm** (step 17: 152.6 x 84.5). +7.4 mm on the west (dev-board) side, +5.5 mm at the top. South and east edges and the mounting holes did not move. The seven top-edge plugs (PROD FLOW ... STEPPER) moved up 5.5 mm with the edge so they stay at the board edge. At each old pin position a plated hole (1.2 mm pad, 0.6 mm hole) remains, so every existing track and plane connection ends where it did; a top-layer and a bottom-layer track (1.0 mm for supplies and motor phases, 0.5 mm for sensor signals) join it to the moved pin. CPL updated for the seven plugs (Mid Y -22.6 -> -17.1). |
+| Board outline (step 20, `tools/pcb_resize_160x90.py`) | **160.0 x 90.0 mm** (step 17: 152.6 x 84.5). +7.4 mm on the west (dev-board) side, +5.5 mm at the top. South and east edges did not move. The seven top-edge plugs (PROD FLOW ... STEPPER) moved up 5.5 mm with the edge so they stay at the board edge. At each old pin position a plated hole (1.2 mm pad, 0.6 mm hole) remains, so every existing track and plane connection ends where it did; a top-layer and a bottom-layer track (1.0 mm for supplies and motor phases, 0.5 mm for sensor signals) join it to the moved pin. CPL updated for the seven plugs (Mid Y -22.6 -> -17.1). |
 | Plug labels | Sensor, servo, TDS and stepper plugs carry their name in the knockout style (white box, clear letters) directly at the plug, with a legend for every pin: PROD FLOW, BRINE FLOW (GND S 5V), HI PRES, LO PRES (S 12V), WATER TEMP, MOTOR TEMP (GND S 3V3), STEPPER (B2 B1 A1 A2), SERVO 1, SERVO 2, BRINE TDS, PROD TDS (GND 5V S). The old block labels 11 mm away from the plugs and the plain "- + S" marks were removed; the connector J-numbers are hidden on the silkscreen. |
 | Already in that style, unchanged | POWER (12V GND), RS485 (A B GND), RELAY 1-5, I2C. |
 | Dead copper removed | Two stubs that step 17's DRC reported as dangling (a 4 mm +12V stub on the back near C57, an 18 um sliver at U9). |
@@ -31,9 +31,9 @@ This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diode
 
 ## Verification
 
-- KiCad 10 DRC with schematic parity (`baseline/rev_d_step20_drc.json`): 0 unconnected, 0 clearance, 0 shorts; nothing new against step 17 except 2 more silk-over-copper warnings; the 2 dangling-track warnings are gone. Silkscreen-overlap warnings went from 23 to 36: the plug names touch the pin-1 triangles of the plug footprints.
-- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19 and 20.
-- Renders: `rev_d_pcb_step20_top.png`, `rev_d_pcb_step20_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step20.zip` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
+- KiCad 10 DRC with schematic parity (`baseline/rev_d_step21_drc.json`): 0 unconnected, 0 clearance, 0 shorts; nothing new against step 17 except 2 more silk-over-copper warnings; the 2 dangling-track warnings are gone. Silkscreen-overlap warnings went from 23 to 36: the plug names touch the pin-1 triangles of the plug footprints.
+- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included).
+- Renders: `rev_d_pcb_step21_top.png`, `rev_d_pcb_step21_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step21.zip` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
@@ -45,10 +45,21 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
 
     git show 217fe22:brineomatic/brineomatic.kicad_pcb > step17.kicad_pcb
     python rev-d-12v/tools/pcb_labels_breakout.py step17.kicad_pcb step19.kicad_pcb
-    python rev-d-12v/tools/pcb_resize_160x90.py step19.kicad_pcb brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/pcb_resize_160x90.py step19.kicad_pcb step20.kicad_pcb
+    python rev-d-12v/tools/pcb_branding_holes.py step20.kicad_pcb brineomatic/brineomatic.kicad_pcb
 
 ## Known cosmetic points of the resize
 
 - The new strips at the top and on the west side carry no ground pour (the pour outlines were not enlarged).
-- Mounting hole H1 is now 9.2 mm from the top edge while the others are 3.6-3.7 mm from theirs; the hole pattern itself is unchanged.
 - The plug courtyards reach the top edge exactly as before (the plugs moved by the same 5.5 mm as the edge).
+
+## Step 21 (`tools/pcb_branding_holes.py`): corner holes, dev-board type, credits, 12 V warning
+
+| Item | Detail |
+|---|---|
+| Mounting holes | H1-H4 moved to the four corners, each 4.0 mm in from both edges: (30.6, 10.5), (30.6, 92.5), (182.6, 10.5), (182.6, 92.5) in KiCad coordinates. **Hole pattern is now 152.0 x 82.0 mm** (was 98.8 x 77.2 / 60.3, not rectangular). The standoff pads stay on GND; three of them lie outside the ground pour and are tied to ground with a 0.6 mm top-layer track. The alignment holes H5, H6 did not move. |
+| Dev-board type | Printed inside the socket outline (covered once the dev board is fitted): "ESP32-S3-DevKitC-1-N16R8", "Espressif, board v1.1 (RGB LED on GPIO38)", "module ESP32-S3-WROOM-1-N16R8", "16 MB flash, 8 MB octal PSRAM". |
+| Name and credits | Top-left corner, horizontal: BRINEOMATIC / REMIX REV D-12V / github.com/papparazzi/brineomatic / based on Brineomatic Rev C1 by hoeken / github.com/hoeken/brineomatic. The vertical name, link and "REV D 12V" beside the fuse were removed. |
+| 12 V warning | "12V ONLY" (2.8 mm) with "9-15V DC   NO 24V" left of the RS485 plug, and "12V ONLY - NO 24V" (2.0 mm, vertical) beside the fuse next to the power plug. Both in the knockout style. |
+
+No net change. DRC with parity: nothing new against step 20. Trace: 0 unreached.
