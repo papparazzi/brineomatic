@@ -47,6 +47,7 @@ frothfet-12ch/output/
 *.wrl
 *.FCStd1
 *.stl
+!rev-d-12v/case/print/*.stl
 *.dxf
 brineomatic/production/bom.csv
 brineomatic/production/designators.csv

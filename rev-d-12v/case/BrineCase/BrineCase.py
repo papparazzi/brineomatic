@@ -19,6 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() and
 OUT = os.path.join(HERE, '..', 'print')
 F3D = os.path.join(HERE, '..', 'fusion', 'brineomatic_case_revD12V.f3d')
 REF_STEP = os.path.join(HERE, '..', 'ref', 'brineomatic_step23_board.step')
+SHOTS = os.path.join(HERE, '..', 'renders')
 WITH_REF = False     # True: also import the KiCad board model and run an interference check (slow; run as a second job)
 
 # ---------------------------------------------------------------- board facts (from the KiCad file, step 23)
@@ -55,7 +56,8 @@ DEV_TOP = PCB_TOP + 8.5 + DEV_SPACER + 1.6 + 3.3      # tallest dev-board part (
 CEIL_IN = DEV_TOP + 3.0                     # 3 mm of air above the dev board
 TOP = CEIL_IN + WALL
 NOTCH_H = 12.0          # plug notch height above the board: header 7.55 + 4.45 for the plug's screw heads (plug not measured)
-NOTCH_SIDE = 0.6        # each side of a header body
+NOTCH_SIDE = 0.4        # each side of a header body
+FIN_MIN = 1.2           # thinnest wall left between two notches (3 perimeters); closer plugs share one notch
 USB_W, USB_H = 24.0, 7.2                    # one notch for both USB plugs; top 7.2 above the dev board's underside (connector centre +3.5 for the plug's grip)
 R_I, R_O = 1.2, 3.2
 IX0, IX1, IY0, IY1 = -CLR, BX + CLR, -CLR, BY + CLR
@@ -63,7 +65,9 @@ OX0, OX1, OY0, OY1 = IX0 - WALL, IX1 + WALL, IY0 - WALL, IY1 + WALL
 
 # M3 heat-set insert (Ruthex / Voron M3 x 5 x 4): pilot 4.4, depth 4.8
 INS_D, INS_DEPTH, BOSS_D = 4.4, 4.8, 7.6
-SCREW_CLR_D, CBORE_D, CBORE_H, TUBE_D = 3.4, 6.0, 3.2, 8.0
+SCREW_CLR_D, CBORE_D, TUBE_D = 3.4, 6.0, 8.0
+SCREW_L, SCREW_ENGAGE = 20.0, 3.5             # M3 x 20 closing screws, 3.5 mm into the 4 mm insert
+CBORE_H = TOP - (STANDOFF_TOP + SCREW_L - SCREW_ENGAGE)      # counterbore depth that makes that screw length fit (6.0)
 LUG_W, LUG_L, LUG_T, LUG_HOLE = 14.0, 12.0, 4.0, 4.5      # four screw-down lugs on the base
 # display mount
 POCKET_D = 1.2                              # glass sinks this far into the ceiling; 0.8 mm lip frames the window
@@ -127,16 +131,28 @@ def cbore(c, x, y):
     sub(c, cyl(x, y, z1, TOP + 1, CBORE_D))
 
 
+def notches(row):
+    """notch extents for a row of plugs; neighbours that would leave a wall thinner than FIN_MIN share one notch"""
+    out = []
+    for name, lo, hi in sorted(row, key=lambda r: r[1]):
+        lo, hi = lo - NOTCH_SIDE, hi + NOTCH_SIDE
+        if out and lo - out[-1][1] < FIN_MIN:
+            out[-1][1] = hi
+        else:
+            out.append([lo, hi])
+    return out
+
+
 def build_cover():
     c = rr(OX0, OX1, OY0, OY1, SPLIT, TOP, R_O)
     sub(c, rr(IX0, IX1, IY0, IY1, SPLIT - 1, CEIL_IN, R_I))
     # plug notches: open slots from the parting line upwards
-    for name, lo, hi in BOTTOM:
-        sub(c, box(lo - NOTCH_SIDE, hi + NOTCH_SIDE, OY0 - 1, IY0 + 0.5, SPLIT - 1, PCB_TOP + NOTCH_H))
-    for name, lo, hi in TOP_ROW:
-        sub(c, box(lo - NOTCH_SIDE, hi + NOTCH_SIDE, IY1 - 0.5, OY1 + 1, SPLIT - 1, PCB_TOP + NOTCH_H))
-    for name, lo, hi in EAST:
-        sub(c, box(IX1 - 0.5, OX1 + 1, lo - NOTCH_SIDE, hi + NOTCH_SIDE, SPLIT - 1, PCB_TOP + NOTCH_H))
+    for lo, hi in notches(BOTTOM):
+        sub(c, box(lo, hi, OY0 - 1, IY0 + 0.5, SPLIT - 1, PCB_TOP + NOTCH_H))
+    for lo, hi in notches(TOP_ROW):
+        sub(c, box(lo, hi, IY1 - 0.5, OY1 + 1, SPLIT - 1, PCB_TOP + NOTCH_H))
+    for lo, hi in notches(EAST):
+        sub(c, box(IX1 - 0.5, OX1 + 1, lo, hi, SPLIT - 1, PCB_TOP + NOTCH_H))
     # USB notch below the dev board's USB end (both ports)
     ucx = (DEV_X0 + DEV_X1) / 2
     usb_top = PCB_TOP + 8.5 + DEV_SPACER + USB_H
@@ -161,9 +177,10 @@ def build_cover():
 def build_clamp():
     """Frame that presses on the edge of the display board from behind. Modelled in place (cover upright)."""
     z1, z0 = D_PCB_BACK, D_PCB_BACK - CLAMP_T
-    k = box(D_CX - D_BOSS_X - BOSS_D / 2, D_CX + D_BOSS_X + BOSS_D / 2, D_CY - D_PCB_H / 2 - 0.4, D_CY + D_PCB_H / 2 + 0.4, z0, z1)
+    # one piece, U-shaped: the top bar runs outside the display board (the pin header is inside it), the bottom stays open for the flex cable fold
+    k = box(D_CX - D_BOSS_X - BOSS_D / 2, D_CX + D_BOSS_X + BOSS_D / 2, D_CY - D_PCB_H / 2 - 0.4, D_CY + D_PCB_H / 2 + 4.4, z0, z1)
     sub(k, box(D_CX - D_PCB_W / 2 + CLAMP_LAP, D_CX + D_PCB_W / 2 - CLAMP_LAP, D_CY - D_PCB_H / 2 + CLAMP_LAP, D_CY + D_PCB_H / 2 - CLAMP_LAP, z0 - 1, z1 + 1))
-    sub(k, box(D_CX - 8.0, D_CX + 8.0, D_CY + D_PCB_H / 2 - CLAMP_LAP - 0.5, D_CY + D_PCB_H / 2 + 1, z0 - 1, z1 + 1))     # header pins and wires, top centre
+    sub(k, box(D_CX - 8.0, D_CX + 8.0, D_CY + D_PCB_H / 2 - CLAMP_LAP - 0.5, D_CY + D_PCB_H / 2 + 0.4, z0 - 1, z1 + 1))   # header pins and wires, top centre
     sub(k, box(D_CX - 9.0, D_CX + 9.0, D_CY - D_PCB_H / 2 - 1, D_CY - D_PCB_H / 2 + CLAMP_LAP + 0.5, z0 - 1, z1 + 1))     # flex cable fold, bottom centre
     for sx in (-1, 1):
         for sy in (-1, 1):
@@ -181,6 +198,14 @@ def paint(design, body, name):
 
 
 def run():
+    for i in range(app.documents.count - 1, -1, -1):          # close unsaved documents from earlier runs of this script
+        try:
+            d = app.documents.item(i)
+            dz = adsk.fusion.Design.cast(d.products.itemByProductType('DesignProductType'))
+            if dz and not d.isSaved and any(o.component.name == 'Case base' for o in dz.rootComponent.occurrences):
+                d.close(False)
+        except Exception:
+            pass
     doc = app.documents.add(adsk.core.DocumentTypes.FusionDesignDocumentType)
     design = adsk.fusion.Design.cast(doc.products.itemByProductType('DesignProductType'))
     design.designType = adsk.fusion.DesignTypes.DirectDesignType
@@ -198,9 +223,8 @@ def run():
         bb = body.boundingBox
         print('%-14s %.1f x %.1f x %.1f mm, %.1f cm3, %d faces' % (name, (bb.maxPoint.x - bb.minPoint.x) * 10, (bb.maxPoint.y - bb.minPoint.y) * 10,
                                                                    (bb.maxPoint.z - bb.minPoint.z) * 10, body.volume, body.faces.count))
-    screw = (TOP - CBORE_H) - (STANDOFF_TOP - 4.0)
     print('heights: board top z %.1f, dev board top z %.1f, ceiling inside z %.1f, case top z %.1f' % (PCB_TOP, DEV_TOP, CEIL_IN, TOP))
-    print('closing screws: head seat to bottom of insert = %.1f mm -> M3 x %d' % (screw, int(screw // 5 * 5)))
+    print('closing screws: M3 x %d, head seat %.1f mm below the top face, %.1f mm of thread in the insert' % (SCREW_L, CBORE_H, SCREW_ENGAGE))
     print('display: board back at z %.1f, %.1f mm above the main board; fuse holder top is %.1f mm above the main board' % (
         D_PCB_BACK, D_PCB_BACK - CLAMP_T - PCB_TOP, FUSE_H))
 
@@ -240,6 +264,29 @@ def run():
         em.execute(o)
         em.execute(em.createSTEPExportOptions(os.path.join(OUT, fn + '.step'), comps[name]))
     em.execute(em.createFusionArchiveExportOptions(os.path.normpath(F3D)))
+    # screenshots: closed case, cover removed, cover from the inside
+    try:
+        os.makedirs(SHOTS, exist_ok=True)
+        vp = app.activeViewport
+        occs = dict((o.component.name, o) for o in root.occurrences)
+        def shot(fn, eye, up=(0, 0, 1), hide=()):
+            for n, o in occs.items():
+                o.isLightBulbOn = n not in hide
+            cam = vp.camera
+            cam.target = P(80, 45, 15); cam.eye = P(*eye); cam.upVector = V(*up); cam.isFitView = True
+            vp.camera = cam
+            vp.refresh(); adsk.doEvents()
+            vp.saveAsImageFile(os.path.join(SHOTS, fn), 1800, 1200)
+        shot('case_closed_iso.png', (260, -140, 190))
+        shot('case_closed_back_iso.png', (-100, 230, 190))
+        shot('case_open_iso.png', (260, -140, 190), hide=('Case cover', 'Display clamp'))
+        shot('case_open_top.png', (80, 45, 400), up=(0, 1, 0), hide=('Case cover', 'Display clamp'))
+        shot('cover_inside.png', (200, -110, -170), hide=('Case base',) + tuple(n for n in occs if n not in ('Case base', 'Case cover', 'Display clamp')))
+        for o in occs.values():
+            o.isLightBulbOn = True
+        print('screenshots written to', os.path.normpath(SHOTS))
+    except Exception:
+        print('screenshots failed: ' + traceback.format_exc())
     print('exported STL + STEP to', os.path.normpath(OUT), 'and', os.path.normpath(F3D))
 
 
