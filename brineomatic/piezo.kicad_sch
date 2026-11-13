@@ -689,9 +689,6 @@
     (property "Supplier Part" "" (at 133.35 78.74 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Rotation Offset" "180" (at 133.35 78.74 0)
-      (effects (font (size 1.27 1.27)))
-    )
     (pin "1" (uuid 58adc3bb-d03c-441a-aedd-96b797d49e9f))
     (pin "2" (uuid 694c95ab-6cde-47dd-adf4-b7d353291794))
     (instances

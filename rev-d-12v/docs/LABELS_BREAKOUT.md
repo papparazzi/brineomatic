@@ -31,9 +31,9 @@ This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diode
 
 ## Verification
 
-- KiCad 10 DRC with schematic parity (`baseline/rev_d_step23_drc.json`): 0 unconnected, 0 clearance, 0 shorts; nothing new against step 17 except 2 more silk-over-copper warnings; the 2 dangling-track warnings are gone. Silkscreen-overlap warnings went from 23 to 36: the plug names touch the pin-1 triangles of the plug footprints.
+- KiCad 10 DRC with schematic parity (`baseline/rev_d_step24_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 32: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
 - `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included).
-- Renders: `rev_d_pcb_step23_top.png`, `rev_d_pcb_step23_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step23.zip` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
+- Renders: `rev_d_pcb_step24_top.png`, `rev_d_pcb_step24_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step24.zip`, made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
@@ -48,7 +48,10 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
     python rev-d-12v/tools/pcb_resize_160x90.py step19.kicad_pcb step20.kicad_pcb
     python rev-d-12v/tools/pcb_branding_holes.py step20.kicad_pcb step21.kicad_pcb
     python rev-d-12v/tools/pcb_antenna_keepout.py step21.kicad_pcb step22.kicad_pcb
-    python rev-d-12v/tools/pcb_power_plug_align.py step22.kicad_pcb brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/pcb_power_plug_align.py step22.kicad_pcb step23.kicad_pcb
+    python rev-d-12v/tools/pcb_review_fix_power.py step23.kicad_pcb brineomatic/brineomatic.kicad_pcb
+
+Step 24 also edits the schematic and regenerates the CPL; those commands are in `REVIEW_FIXES.md`.
 
 ## Known cosmetic points of the resize
 
@@ -80,3 +83,9 @@ CPL: J10 Mid Y -85.5 -> -87.5.
 
 Front of the plug bodies from the board edge after this step: bottom row 0.95 mm, top row 2.55 mm, right side 2.55 mm (the last two as designed in October).
 The JLCPCB quote of 13 Nov 2026 predates steps 22 and 23.
+
+## Step 24: the independent review's two blockers
+
+The input power path from the fuse to the reverse-polarity MOSFETs and on to +12V is rebuilt with wide copper (B1), and the CPL now carries
+JLCPCB's rotation corrections, as Rev-C1's did (B2). No net change, no part change, BOM unchanged; the CPL and ten stale schematic
+`Rotation Offset` fields change. Detail, numbers and the remaining open findings: `REVIEW_FIXES.md`.

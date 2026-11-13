@@ -1,4 +1,8 @@
-"""Generate JLCPCB BOM + CPL for Rev D from the schematic netlist and the PCB.  usage: make_jlc.py <netlist.xml> <pcb> <outdir>"""
+"""Generate JLCPCB BOM + CPL for Rev D from the schematic netlist and the PCB.  usage: make_jlc.py <netlist.xml> <pcb> <outdir>
+kicad-cli is taken from the KICAD_CLI environment variable, else from the macOS application folder.
+CPL rotation = KiCad rotation + JLCPCB package correction + the symbol's 'Rotation Offset' field. This is the rule of the
+Fabrication-Toolkit plugin (bennymeg/Fabrication-Toolkit, plugins/transformations.csv), which made Rev-C1's production CPL: Rev-C1's
+toolkit options have AUTO TRANSLATE on, and all 243 rows of its position file follow the rule (independent review, 13 Nov 2026)."""
 import sys, csv, subprocess, collections, re, xml.etree.ElementTree as ET, os
 xmlf, pcb, out = sys.argv[1:4]
 os.makedirs(out, exist_ok=True)
@@ -6,6 +10,12 @@ root = ET.parse(xmlf).getroot()
 SKIP = ('TP', 'H', 'FID', 'SYM', 'U5')
 groups = collections.defaultdict(list)
 CENTRE = {'F1': (157.6, 67.1)}   # courtyard centres measured with pcbnew (mm, KiCad y-down)
+CLI = os.environ.get('KICAD_CLI') or os.path.expanduser('~/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli')
+# package corrections from the toolkit's table (first match wins); only the rules that match a footprint on this board are listed
+PKG_ROT = (('^CP_Elec_', 180), ('^SOIC-', 270), ('^SOT-23', 180), ('^TSSOP-', 270))
+# packages without a correction in that table, each checked against Rev-C1's position file or JLCPCB's placement viewer
+NO_ROT = ('C_', 'R_', 'L_', 'LED_', 'D_SMA', 'D_SMB', 'D_SOD-', 'Fuse_', 'Fuseholder_', 'PhoenixContact_MC_', 'JST_SH_', 'MagneticBuzzer_', 'VQFN-')
+rotoff = {}; corr = []
 placed = set(); loose = []
 fpn = {c.get('ref'): (c.findtext('footprint') or '') for c in root.find('components')}
 for c in root.find('components'):
@@ -14,6 +24,7 @@ for c in root.find('components'):
     fields = {f.get('name'): (f.text or '').strip() for f in c.iter('field')}
     fp = (c.findtext('footprint') or '').split(':')[-1]
     lc = fields.get('LCSC', '')
+    rotoff[r] = next((fields[k] for k in ('FT Rotation Offset', 'Rotation Offset', 'RotOffset') if k in fields), '')   # toolkit's order
     if r.startswith(SKIP) or r.startswith('#') or 'dnp' in props or 'exclude_from_board' in props:
         continue
     if not fp:
@@ -36,7 +47,7 @@ for lc, (refs, fps, _) in sorted(bylc.items(), key=lambda t: t[0]):
 rows.append(['Female header 1x22 2.54mm 8.5mm', 'U5A, U5B', 'PinSocket_1x22_P2.54mm_Vertical', 'C41376161'])   # sockets for the ESP32-S3-DevKitC-1 (dev board itself is NOT assembled)
 with open(out + '/BOM-rev_d.csv', 'w', newline='') as f:
     w = csv.writer(f); w.writerow(['Comment', 'Designator', 'Footprint', 'LCSC Part #']); w.writerows(rows)
-subprocess.run([os.path.expanduser('~/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli'), 'pcb', 'export', 'pos', '--format', 'csv', '--units', 'mm', '--side', 'front', '-o', out + '/_pos.csv', pcb], capture_output=True)
+subprocess.run([CLI, 'pcb', 'export', 'pos', '--format', 'csv', '--units', 'mm', '--side', 'front', '-o', out + '/_pos.csv', pcb], capture_output=True, check=True)
 n = 0
 with open(out + '/_pos.csv') as f, open(out + '/CPL-rev_d.csv', 'w', newline='') as g:
     w = csv.writer(g); w.writerow(['Designator', 'Mid X', 'Mid Y', 'Layer', 'Rotation'])
@@ -51,12 +62,19 @@ with open(out + '/_pos.csv') as f, open(out + '/CPL-rev_d.csv', 'w', newline='')
             y = float(r['PosY']) + (y_shift if y_shift else 0.0)
             if r['Ref'] in CENTRE:   # THT parts whose KiCad origin is not the body centre: use the courtyard centre
                 x, y = CENTRE[r['Ref']][0], -CENTRE[r['Ref']][1]
-            w.writerow([r['Ref'], '%.4fmm' % x, '%.4fmm' % y, 'Top', r['Rot']]); n += 1
+            name = fpn.get(r['Ref'], '').split(':')[-1]
+            pk = next((a for rx, a in PKG_ROT if re.search(rx, name)), None)
+            if pk is None and not name.startswith(NO_ROT): print('CHECK ROTATION', r['Ref'], name, '(no JLCPCB correction rule for this package)')
+            off = ((pk or 0) + float(rotoff.get(r['Ref']) or 0)) % 360
+            cpl_rot = '%.6f' % ((float(r['Rot']) + off) % 360) if off else r['Rot']
+            if off: corr.append('%s %s: KiCad %s + package %d + field %s -> %s' % (r['Ref'], name, r['Rot'], pk or 0, rotoff.get(r['Ref']) or 0, cpl_rot))
+            w.writerow([r['Ref'], '%.4fmm' % x, '%.4fmm' % y, 'Top', cpl_rot]); n += 1
 os.remove(out + '/_pos.csv')
 with open(out + '/CPL-rev_d.csv', 'a', newline='') as g:
     w = csv.writer(g)
     w.writerow(['U5A', '38.000000mm', '-60.370000mm', 'Top', '90']); w.writerow(['U5B', '60.860000mm', '-60.370000mm', 'Top', '90'])
 print('BOM lines', len(rows), 'placed parts', len(placed), 'CPL rows', n, 'loose', len(loose))
+print('rotation corrections (%d):' % len(corr)); print('\n'.join('   ' + c for c in corr))
 json_ = [(r, v, l) for r, v, l in loose]
 print('loose parts (not in BOM):', json_)
 
