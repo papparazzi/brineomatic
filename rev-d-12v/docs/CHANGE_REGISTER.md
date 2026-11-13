@@ -76,3 +76,10 @@ ESP32 net names, TMC2209, RT7272, L2, MAX40200, ADS1115 (stock to be re-checked)
 ## H. Open items before ordering anything beyond 2 prototypes
 
 1. Human review of the layout in KiCad. 2. Remaining datasheet gaps (**DS?**): SMBJ16CA manufacturer PDF, buzzer PDF (coil resistance), SGM2212 and ESP32-S3 current figures. Everything else listed as DS was read from the manufacturer PDF on 2026-10-31. (TDS ESD diode placement: done, see `TDS_SIGNAL_ANALYSIS.md`.) 3. Bench test per `BRINGUP_TEST_PLAN.md`. 4. 12 V ONLY silkscreen warning; terminal pin-order labels. 5. New case. 6. (done) THT placement in JLC's viewer verified; the east-edge terminals J1/J6/J28/J29 sit correctly. 7. Re-upload the regenerated gerbers (`mfg/rev_d_screw_gerbers.zip`) - older zips are stale.
+
+## I. Step 19 (13 Nov 2026, branch `rev-d-12v-labels`): labels and breakout pads (R0, no net change)
+
+| ID | Change | Due diligence | Open |
+|---|---|---|---|
+| I1 | All dev-board pins labelled; 15 breakout pads beside the unused dev-board pins (extra pads of U5, same pad numbers); west edge 3 mm out (155.6 x 84.5 mm); plug names and per-pin legends in knockout style at every sensor, servo, TDS and stepper plug; two dangling stubs removed. Detail: `LABELS_BREAKOUT.md`. | DRC with parity: nothing new except 2 silk-over-copper warnings. Independent copper trace (`tools/trace_connectors.py`): every plug pin reaches every pad of its net. | Human review; relays have no per-pin legend; four breakout pads are under the dev board; not re-quoted. |
+
