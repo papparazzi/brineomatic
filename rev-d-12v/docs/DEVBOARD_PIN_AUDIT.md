@@ -46,7 +46,9 @@ Notes:
 - **Finding: copper under the antenna.** The module's antenna is at the pin-1 end of the dev board (y 28.8-33.7 on the carrier, x 36.7-62.2).
   The carrier has ground fill on three layers and the 3.3 V plane there (70 % of that area is covered). The antenna sits about 11 mm above it on the sockets.
   Espressif's module design guidance asks for no copper under or near the PCB antenna (general guidance, not re-read today). Expect reduced Wi-Fi range; how much is unknown without a test.
-  Fix if wanted: a keep-out in all four layers under the antenna end. Not done.
+  **Fixed in step 22** (`tools/pcb_antenna_keepout.py`): a rule area on all four copper layers, x 34.0-65.0, y 22.0-31.8, excludes copper fill from 6.8 mm beyond the dev board's antenna edge to 1.9 mm above the pin-1 row.
+  Checked: 0 of 37,200 sample points inside it carry fill; DRC nothing new; trace 0 unreached. There were no tracks or vias in that area.
+  Still there: the copper around the first pins (y 31.8-36), which the 3V3 and GND pins need, and the metal of the sockets themselves. The effect on range is untested either way.
 
 ## 4. Power, for completeness
 

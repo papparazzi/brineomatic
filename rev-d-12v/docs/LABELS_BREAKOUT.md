@@ -31,9 +31,9 @@ This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diode
 
 ## Verification
 
-- KiCad 10 DRC with schematic parity (`baseline/rev_d_step21_drc.json`): 0 unconnected, 0 clearance, 0 shorts; nothing new against step 17 except 2 more silk-over-copper warnings; the 2 dangling-track warnings are gone. Silkscreen-overlap warnings went from 23 to 36: the plug names touch the pin-1 triangles of the plug footprints.
+- KiCad 10 DRC with schematic parity (`baseline/rev_d_step22_drc.json`): 0 unconnected, 0 clearance, 0 shorts; nothing new against step 17 except 2 more silk-over-copper warnings; the 2 dangling-track warnings are gone. Silkscreen-overlap warnings went from 23 to 36: the plug names touch the pin-1 triangles of the plug footprints.
 - `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included).
-- Renders: `rev_d_pcb_step21_top.png`, `rev_d_pcb_step21_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step21.zip` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
+- Renders: `rev_d_pcb_step22_top.png`, `rev_d_pcb_step22_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step22.zip` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
@@ -46,7 +46,8 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
     git show 217fe22:brineomatic/brineomatic.kicad_pcb > step17.kicad_pcb
     python rev-d-12v/tools/pcb_labels_breakout.py step17.kicad_pcb step19.kicad_pcb
     python rev-d-12v/tools/pcb_resize_160x90.py step19.kicad_pcb step20.kicad_pcb
-    python rev-d-12v/tools/pcb_branding_holes.py step20.kicad_pcb brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/pcb_branding_holes.py step20.kicad_pcb step21.kicad_pcb
+    python rev-d-12v/tools/pcb_antenna_keepout.py step21.kicad_pcb brineomatic/brineomatic.kicad_pcb
 
 ## Known cosmetic points of the resize
 
@@ -63,3 +64,7 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
 | 12 V warning | "12V ONLY" (2.8 mm) with "9-15V DC   NO 24V" left of the RS485 plug, and "12V ONLY - NO 24V" (2.0 mm, vertical) beside the fuse next to the power plug. Both in the knockout style. |
 
 No net change. DRC with parity: nothing new against step 20. Trace: 0 unreached.
+
+## Step 22: antenna keep-out
+
+No copper fill under the Wi-Fi antenna end of the dev board; see `DEVBOARD_PIN_AUDIT.md` section 3. No net change. The JLCPCB quote of 13 Nov 2026 (US$172.54) was made with the step-21 gerbers; the keep-out changes copper fill only.

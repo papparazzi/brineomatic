@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-11-13T09:31:46",
+    "date": "2026-11-13T13:06:09",
     "ignored_checks": [
         {
             "description": "Thermal relief connection to zone incomplete",
@@ -43,7 +43,7 @@
     ],
     "kicad_version": "10.0.6",
     "schematic_parity": [],
-    "source": "step21.kicad_pcb",
+    "source": "step22.kicad_pcb",
     "unconnected_items": [],
     "violations": [
         {
@@ -165,29 +165,6 @@
             "description": "Front solder mask aperture bridges items with different nets",
             "items": [
                 {
-                    "description": "NPTH pad of H2",
-                    "pos": {
-                        "x": 30.6,
-                        "y": 92.5
-                    },
-                    "uuid": "e0c721a9-59b5-42c8-a1fc-df1787fedf22"
-                },
-                {
-                    "description": "Pad 1 [GND] of H2 on F.Cu",
-                    "pos": {
-                        "x": 30.6,
-                        "y": 92.5
-                    },
-                    "uuid": "bf186619-4623-4f5c-936a-0471d2e79162"
-                }
-            ],
-            "severity": "error",
-            "type": "solder_mask_bridge"
-        },
-        {
-            "description": "Front solder mask aperture bridges items with different nets",
-            "items": [
-                {
                     "description": "NPTH pad of H3",
                     "pos": {
                         "x": 182.6,
@@ -202,6 +179,29 @@
                         "y": 10.5
                     },
                     "uuid": "eb7fd0c2-7f38-45c4-bd3c-e11d910c07a8"
+                }
+            ],
+            "severity": "error",
+            "type": "solder_mask_bridge"
+        },
+        {
+            "description": "Front solder mask aperture bridges items with different nets",
+            "items": [
+                {
+                    "description": "NPTH pad of H2",
+                    "pos": {
+                        "x": 30.6,
+                        "y": 92.5
+                    },
+                    "uuid": "e0c721a9-59b5-42c8-a1fc-df1787fedf22"
+                },
+                {
+                    "description": "Pad 1 [GND] of H2 on F.Cu",
+                    "pos": {
+                        "x": 30.6,
+                        "y": 92.5
+                    },
+                    "uuid": "bf186619-4623-4f5c-936a-0471d2e79162"
                 }
             ],
             "severity": "error",
