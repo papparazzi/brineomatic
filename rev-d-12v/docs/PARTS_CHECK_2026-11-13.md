@@ -56,3 +56,24 @@ Each is a decision about what the watermaker needs, not a parts optimisation. Th
 - BAT54S -> BAV99 on the flow-meter inputs: the Schottky clamps the 5 V pulse to 3.3 V + 0.3 V; a silicon diode would let the pin reach about 4.0 V.
 - 4-pin stepper plug as two 2-pin plugs: saves a line but needs a layout change and the closed-end bodies do not sit at one pitch.
 - TMC2209 support parts (22 nF, 4.7 uF, 0.11R): values are set by the driver's datasheet.
+
+## 4. JLCPCB Economic quote, 13 Nov 2026 (5 boards, top side, quote page only: nothing saved to cart, nothing ordered)
+
+Files: `mfg/gerbers-rev_d_step21.zip`, `mfg/BOM-rev_d.csv`, `mfg/CPL-rev_d.csv`. JLCPCB detected a 4-layer board of 90 x 160 mm.
+All 57 BOM lines matched and selected (the dev-board socket line U5A,U5B comes up unselected and was ticked by hand).
+The seven moved top plugs sit on their outlines in JLCPCB's 2D placement viewer. Page defaults for everything else (green, 1.6 mm).
+
+| Item | USD |
+|---|---|
+| PCB (engineering 25.00 + board 8.90) | 33.90 |
+| Setup fee | 8.24 |
+| Stencil | 1.55 |
+| Components (57 lines) | 69.89 |
+| Extended components fee (14 lines x 3.09) | 43.26 |
+| SMT assembly | 4.12 |
+| Hand-soldering labour | 3.61 |
+| Manual assembly | 7.97 |
+| **Total** | **172.54** |
+
+US$34.51 per board, without shipping and without the five dev boards. The October quote for the 152.6 x 84.5 mm board was US$178.51.
+
