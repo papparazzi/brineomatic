@@ -33,7 +33,7 @@ This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diode
 
 - KiCad 10 DRC with schematic parity (`baseline/rev_d_step19_drc.json`): 0 unconnected, 0 clearance, 0 shorts; nothing new against step 17 except 2 more silk-over-copper warnings; the 2 dangling-track warnings are gone.
 - `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17 and on step 19.
-- Renders: `rev_d_pcb_step19_top.png`, `rev_d_pcb_step19_bottom.png`. Gerbers: `mfg/gerbers-rev_d_step19.zip` (not uploaded to JLCPCB, not quoted; the 3 mm wider board may change the bare-board price slightly).
+- Renders: `rev_d_pcb_step19_top.png`, `rev_d_pcb_step19_bottom.png`. Gerbers: `mfg/gerbers-rev_d_step19.zip` exists only on the author's PC (`*.zip` is git-ignored in this repository); regenerate with `kicad-cli pcb export gerbers` and `export drill` (not uploaded to JLCPCB, not quoted; the 3 mm wider board may change the bare-board price slightly).
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
