@@ -43,6 +43,7 @@ frothfet-12ch/bom/
 frothfet-12ch/output/
 \#*
 *.zip
+!rev-d-12v/mfg/*.zip
 *.wrl
 *.FCStd1
 *.stl
