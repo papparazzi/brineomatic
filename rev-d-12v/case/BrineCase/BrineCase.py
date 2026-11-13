@@ -75,6 +75,23 @@ D_BOSS_X, D_BOSS_Y = D_PCB_W / 2 + 0.4 + 3.4, 15.0          # clamp bosses left 
 D_PCB_BACK = CEIL_IN - (D_GLASS_ABOVE_PCB - POCKET_D) - 1.0  # z of the display board's back face (cover upright)
 CLAMP_T, CLAMP_LAP = 2.4, 1.8
 
+# ---------------------------------------------------------------- lettering on the cover top: flush inlay in a second colour
+# The cover prints top face down, so the lettering is in the first layers only: INLAY_D = 0.6 mm = 3 layers of 0.2 mm,
+# i.e. colour changes on 3 layers and none after that.
+INLAY_D = 0.6
+LABELS = [   # text, centre x, centre y, box width, text height
+    ('BRINEOMATIC', 84.0, 71.5, 112, 9.0),
+    ('M/Y LADA PANAS', 84.0, 23.0, 90, 5.5),
+    # plugs on the y = 90 edge
+    ('PROD\nFLOW', 51.4, 83.6, 14, 2.6), ('BRINE\nFLOW', 65.8, 83.6, 14, 2.6), ('HI\nPRES', 78.45, 83.6, 11, 2.6), ('LO\nPRES', 89.35, 83.6, 11, 2.6),
+    ('WATER\nTEMP', 102.0, 83.6, 14, 2.6), ('MOTOR\nTEMP', 116.4, 83.6, 14, 2.6), ('STEPPER', 132.55, 83.6, 18, 2.6),
+    # plugs on the y = 0 edge
+    ('USB', 22.83, 4.6, 14, 3.6), ('RS485', 65.85, 4.6, 14, 3.0), ('R1', 77.15, 4.6, 8, 3.6), ('R2', 86.65, 4.6, 8, 3.6), ('R3', 96.21, 4.6, 8, 3.6),
+    ('R4', 105.75, 4.6, 8, 3.6), ('R5', 115.31, 4.6, 8, 3.6), ('12V ONLY', 132.5, 4.6, 24, 3.6),
+    # plugs on the x = 160 edge
+    ('SERVO 1', 147.5, 75.5, 26, 3.0), ('SERVO 2', 147.5, 61.2, 26, 3.0), ('TDS BRINE', 147.5, 46.9, 26, 3.0), ('TDS PROD', 147.5, 32.6, 26, 3.0),
+]
+
 app = adsk.core.Application.get()
 tbm = adsk.fusion.TemporaryBRepManager.get()
 
@@ -188,6 +205,68 @@ def build_clamp():
     return k
 
 
+def inlay(root, cover_comp, depth):
+    """Lettering as separate bodies sunk flush into the cover top; returns (inlay component, report)."""
+    occ = root.occurrences.addNewComponent(adsk.core.Matrix3D.create())
+    comp = occ.component
+    comp.name = 'Cover inlay'
+    pin = comp.constructionPlanes.createInput()
+    pin.setByOffset(comp.xYConstructionPlane, adsk.core.ValueInput.createByReal(TOP * CM))
+    sk = comp.sketches.add(comp.constructionPlanes.add(pin))
+    sk.name = 'lettering'
+    for text, cx, cy, w, h in LABELS:
+        lines = text.count('\n') + 1
+        ti = sk.sketchTexts.createInput2(text, h * CM)
+        ti.setAsMultiLine(P(cx - w / 2, cy - h * lines, 0), P(cx + w / 2, cy + h * lines, 0),
+                          adsk.core.HorizontalAlignments.CenterHorizontalAlignment, adsk.core.VerticalAlignments.MiddleVerticalAlignment, 0)
+        try:
+            ti.fontName = 'Arial'
+            ti.textStyle = adsk.fusion.TextStyles.TextStyleBold
+        except Exception:
+            pass
+        sk.sketchTexts.add(ti)
+    for i in range(sk.sketchTexts.count - 1, -1, -1):
+        sk.sketchTexts.item(i).explode()
+
+    def bb(loop):
+        x0 = y0 = 1e9
+        x1 = y1 = -1e9
+        for pc in loop.profileCurves:
+            b = pc.sketchEntity.boundingBox
+            x0, y0, x1, y1 = min(x0, b.minPoint.x), min(y0, b.minPoint.y), max(x1, b.maxPoint.x), max(y1, b.maxPoint.y)
+        return (round(x0, 3), round(y0, 3), round(x1, 3), round(y1, 3))
+    holes = set()
+    for pr in sk.profiles:                       # the enclosed parts of letters like O, A, R, 4, 8 must stay cover material
+        for lp in pr.profileLoops:
+            if not lp.isOuter:
+                holes.add(bb(lp))
+    profs = adsk.core.ObjectCollection.create()
+    skipped = 0
+    for pr in sk.profiles:
+        outer = [lp for lp in pr.profileLoops if lp.isOuter][0]
+        if bb(outer) in holes:
+            skipped += 1
+        else:
+            profs.add(pr)
+    ex = comp.features.extrudeFeatures
+    inp = ex.createInput(profs, adsk.fusion.FeatureOperations.NewBodyFeatureOperation)
+    inp.setOneSideExtent(adsk.fusion.DistanceExtentDefinition.create(adsk.core.ValueInput.createByReal(depth * CM)),
+                         adsk.fusion.ExtentDirections.NegativeExtentDirection)
+    ex.add(inp)
+    old = cover_comp.bRepBodies.itemByName('Case cover')
+    cut = tbm.copy(old)
+    vol = 0.0
+    for b in comp.bRepBodies:
+        vol += b.volume
+        tbm.booleanOperation(cut, tbm.copy(b), adsk.fusion.BooleanTypes.DifferenceBooleanType)
+    v0 = old.volume
+    old.deleteMe()
+    new = cover_comp.bRepBodies.add(cut)
+    new.name = 'Case cover'
+    return comp, 'inlay: %d letter bodies (%d enclosed areas kept), %.2f cm3; cover %.2f -> %.2f cm3 (difference %.2f)' % (
+        comp.bRepBodies.count, skipped, vol, v0, new.volume, v0 - new.volume)
+
+
 def paint(design, body, name):
     try:
         lib = app.materialLibraries.itemByName('Fusion Appearance Library')
@@ -223,6 +302,15 @@ def run():
         bb = body.boundingBox
         print('%-14s %.1f x %.1f x %.1f mm, %.1f cm3, %d faces' % (name, (bb.maxPoint.x - bb.minPoint.x) * 10, (bb.maxPoint.y - bb.minPoint.y) * 10,
                                                                    (bb.maxPoint.z - bb.minPoint.z) * 10, body.volume, body.faces.count))
+    try:
+        inl, msg = inlay(root, comps['Case cover'], INLAY_D)
+        print(msg)
+        paint(design, comps['Case cover'].bRepBodies.itemByName('Case cover'), 'Plastic - Matte (Gray)')
+        for b in inl.bRepBodies:
+            paint(design, b, 'Plastic - Matte (Yellow)')
+        comps['Cover inlay'] = inl
+    except Exception:
+        print('inlay failed: ' + traceback.format_exc())
     print('heights: board top z %.1f, dev board top z %.1f, ceiling inside z %.1f, case top z %.1f' % (PCB_TOP, DEV_TOP, CEIL_IN, TOP))
     print('closing screws: M3 x %d, head seat %.1f mm below the top face, %.1f mm of thread in the insert' % (SCREW_L, CBORE_H, SCREW_ENGAGE))
     print('display: board back at z %.1f, %.1f mm above the main board; fuse holder top is %.1f mm above the main board' % (
@@ -230,7 +318,8 @@ def run():
 
     ents = adsk.core.ObjectCollection.create()
     for name in comps:
-        ents.add(comps[name].bRepBodies.itemByName(name))
+        if name != 'Cover inlay':
+            ents.add(comps[name].bRepBodies.itemByName(name))
     if WITH_REF and os.path.exists(REF_STEP):
         im = app.importManager
         before = root.occurrences.count
@@ -259,7 +348,7 @@ def run():
     em = design.exportManager
     for name in comps:
         fn = name.lower().replace(' ', '_')
-        o = em.createSTLExportOptions(comps[name].bRepBodies.itemByName(name), os.path.join(OUT, fn + '.stl'))
+        o = em.createSTLExportOptions(comps[name] if name == 'Cover inlay' else comps[name].bRepBodies.itemByName(name), os.path.join(OUT, fn + '.stl'))
         o.meshRefinement = adsk.fusion.MeshRefinementSettings.MeshRefinementHigh
         em.execute(o)
         em.execute(em.createSTEPExportOptions(os.path.join(OUT, fn + '.step'), comps[name]))
@@ -278,10 +367,11 @@ def run():
             vp.refresh(); adsk.doEvents()
             vp.saveAsImageFile(os.path.join(SHOTS, fn), 1800, 1200)
         shot('case_closed_iso.png', (260, -140, 190))
+        shot('case_top.png', (80, 45, 400), up=(0, 1, 0))
         shot('case_closed_back_iso.png', (-100, 230, 190))
-        shot('case_open_iso.png', (260, -140, 190), hide=('Case cover', 'Display clamp'))
-        shot('case_open_top.png', (80, 45, 400), up=(0, 1, 0), hide=('Case cover', 'Display clamp'))
-        shot('cover_inside.png', (200, -110, -170), hide=('Case base',) + tuple(n for n in occs if n not in ('Case base', 'Case cover', 'Display clamp')))
+        shot('case_open_iso.png', (260, -140, 190), hide=('Case cover', 'Display clamp', 'Cover inlay'))
+        shot('case_open_top.png', (80, 45, 400), up=(0, 1, 0), hide=('Case cover', 'Display clamp', 'Cover inlay'))
+        shot('cover_inside.png', (200, -110, -170), hide=('Case base', 'Cover inlay') + tuple(n for n in occs if n not in ('Case base', 'Case cover', 'Display clamp', 'Cover inlay')))
         for o in occs.values():
             o.isLightBulbOn = True
         print('screenshots written to', os.path.normpath(SHOTS))
