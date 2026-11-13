@@ -10,14 +10,14 @@ FILE_DESCRIPTION(
 
 FILE_NAME(
 /* name */ 'case_base.step',
-/* time_stamp */ '2026-11-13T15:35:47+08:00',
+/* time_stamp */ '2026-11-13T15:51:28+08:00',
 /* author */ (''),
 /* organization */ (''),
 /* preprocessor_version */ 'ST-DEVELOPER v20.2',
 /* originating_system */ 'Autodesk Translation Framework v15.15.0.0',
 /* authorisation */ '');
 
-FILE_SCHEMA (('AUTOMOTIVE_DESIGN { 1 0 10303 214 3 1 1 }'));
+FILE_SCHEMA (('AUTOMOTIVE_DESIGN { 1 0 10303 214 3 1 1 }','AP242_MANAGED_MODEL_BASED_3D_ENGINEERING_MIM_LF { 1 0 10303 442 3 1 4 }'));
 ENDSEC;
 
 DATA;
@@ -2276,7 +2276,7 @@ SOLID_ANGLE_UNIT()
 #2216=PRODUCT_DEFINITION_SHAPE('',$,#2219);
 #2217=SHAPE_REPRESENTATION('',(#1293),#2209);
 #2218=PRODUCT_DEFINITION_CONTEXT('part definition',#2223,'design');
-#2219=PRODUCT_DEFINITION('2026-11-13-15-35-47-119','Case base',#2220,#2218);
+#2219=PRODUCT_DEFINITION('2026-11-13-15-51-28-460','Case base',#2220,#2218);
 #2220=PRODUCT_DEFINITION_FORMATION('',$,#2225);
 #2221=PRODUCT_RELATED_PRODUCT_CATEGORY('Case base','Case base',(#2225));
 #2222=APPLICATION_PROTOCOL_DEFINITION('international standard',
@@ -2284,7 +2284,7 @@ SOLID_ANGLE_UNIT()
 #2223=APPLICATION_CONTEXT(
 'Core Data for Automotive Mechanical Design Process');
 #2224=PRODUCT_CONTEXT('part definition',#2223,'mechanical');
-#2225=PRODUCT('2026-11-13-15-35-47-119','Case base',$,(#2224));
+#2225=PRODUCT('2026-11-13-15-51-28-460','Case base',$,(#2224));
 #2226=PRESENTATION_STYLE_ASSIGNMENT((#2228));
 #2227=PRESENTATION_STYLE_ASSIGNMENT((#2229));
 #2228=SURFACE_STYLE_USAGE(.BOTH.,#2230);

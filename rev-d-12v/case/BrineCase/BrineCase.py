@@ -81,7 +81,6 @@ CLAMP_T, CLAMP_LAP = 2.4, 1.8
 INLAY_D = 0.6
 LABELS = [   # text, centre x, centre y, box width, text height
     ('BRINEOMATIC', 84.0, 71.5, 112, 9.0),
-    ('M/Y LADA PANAS', 84.0, 23.0, 90, 5.5),
     # plugs on the y = 90 edge
     ('PROD\nFLOW', 51.4, 83.6, 14, 2.6), ('BRINE\nFLOW', 65.8, 83.6, 14, 2.6), ('HI\nPRES', 78.45, 83.6, 11, 2.6), ('LO\nPRES', 89.35, 83.6, 11, 2.6),
     ('WATER\nTEMP', 102.0, 83.6, 14, 2.6), ('MOTOR\nTEMP', 116.4, 83.6, 14, 2.6), ('STEPPER', 132.55, 83.6, 18, 2.6),

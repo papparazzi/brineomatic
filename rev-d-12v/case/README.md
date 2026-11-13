@@ -48,14 +48,14 @@ Four M3 screws close the case: through the cover, through the board's corner hol
 
 ## Lettering in a second colour
 
-The cover top carries "BRINEOMATIC", "M/Y LADA PANAS" and a name at every plug notch, as a flush inlay 0.6 mm deep.
+The cover top carries "BRINEOMATIC" and a name at every plug notch (no boat name, so the case suits any boat), as a flush inlay 0.6 mm deep.
 The cover prints top face down, so the lettering is the first three 0.2 mm layers and nothing else: colour changes happen on those
 three layers only. The texts and their positions are the `LABELS` list in the script; `INLAY_D` sets the depth.
 
-- `print/case_cover.stl` has the letter pockets; `print/cover_inlay.stl` is the lettering (129 letter bodies, 0.57 cm3), in the same coordinates.
+- `print/case_cover.stl` has the letter pockets; `print/cover_inlay.stl` is the lettering (117 letter bodies, 0.48 cm3), in the same coordinates.
   Load both into the slicer as parts of one object and give the inlay the second colour.
 - For a single colour, print the cover alone: the lettering is then engraved 0.6 mm deep.
-- Large letters are 9.0 and 5.5 mm high. The plug names are 2.6 to 3.6 mm high; at 2.6 mm the strokes are about one nozzle width,
+- "BRINEOMATIC" is 9.0 mm high. The plug names are 2.6 to 3.6 mm high; at 2.6 mm the strokes are about one nozzle width,
   so the top-row names may print soft. Not test-printed.
 
 ## Printing (0.4 mm nozzle)
