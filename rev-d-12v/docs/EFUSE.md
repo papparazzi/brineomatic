@@ -10,6 +10,8 @@ The independent review of step 22 (`INDEPENDENT_REVIEW_BRIEF.md`) listed four ma
 | M3 no undervoltage lockout | **accepted by the owner** (13 Nov 2026): no undervoltage lockout wanted. U3's UVLO input is set to about 5.4 V, below anything a 12 V battery reaches in use |
 | M4 4-20 mA sensors get about 8.3 V at a 10.5 V bus | **dropped by the owner** (13 Nov 2026): the sensor circuit is the same as on Rev-C1 (sensors on the main rail, same 100 Ohm shunts), and the battery is assumed to stay above 12 V (about 9.9 V at the sensor at 20 mA) |
 
+**Update, step 26 (`SERVO_POWER.md`):** M1 fixed: the servo supply runs on 1.8-4.0 mm top-layer copper (13 mOhm).
+
 Not uploaded to JLCPCB, **not quoted**. Untested.
 
 ![Input and eFuse area, step 24 and step 25](rev_d_step25_efuse.png)
@@ -84,6 +86,7 @@ SHDN and FLT are not connected: SHDN has an internal pull-up (device on), FLT is
 - `tools/trace_connectors.py`: every plug pin reaches every pad of its net (0 unreached).
 - Gerbers (`mfg/gerbers-rev_d_step25.zip`, `tools/make_gerbers.py`): 887 drill hits = 744 vias + 143 pad holes (step 24: 880 = 737 + 143).
 - Renders: `rev_d_pcb_step25_top.png`, `rev_d_pcb_step25_bottom.png`.
+- Step 26 replaced these baselines, renders and the gerber zip with its own (`SERVO_POWER.md`); the step-25 files are in commit 964d7b9.
 
 ## Still to do by a person, before paying
 

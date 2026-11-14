@@ -20,4 +20,5 @@ Do not order a larger batch until every line is ticked. Use a lab supply with cu
 15. **Short on +12V**: supply limit 6 A, short +12V to GND through a switch for a few seconds: U3 limits and retries, Q9/Q10 and F1 survive, +12V comes back by itself when the short is removed. Repeat from a stiff source (charged 12 V battery through F1) only after this passes.
 16. **IMON**: voltage across R77 at 1.0 A and 3.0 A load: 0.56 V and 1.67 V (+-10 %).
 17. **Latch-off option**: on one board, remove R75: after a short, U3 stays off until the supply is cycled. Decide which behaviour the installation should have (default: auto-retry, as Rev-C1).
-18. Record results here before releasing any order.
+18. **Servo supply** (step 26, review M1): 12.0 V in, electronic load of 2 A from J6 pin 2 (5V) to J6 pin 3 (GND). J6 pin 2 at least 4.6 V; drop from F2 pin 1 to J6 pin 2 below 50 mV (calculated 26 mV); after 10 min the top-layer route from D10 to J6 below ambient + 20 C. Repeat on J29. Then a stalled servo on each output: the board keeps running and the route stays below ambient + 20 C. At step 25 this path was 161-230 mOhm of 0.25 mm track, mostly on an inner layer.
+19. Record results here before releasing any order.

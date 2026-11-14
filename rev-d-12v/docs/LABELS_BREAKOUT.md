@@ -31,9 +31,9 @@ This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diode
 
 ## Verification
 
-- KiCad 10 DRC with schematic parity (`baseline/rev_d_step25_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 31: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
-- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included), and on steps 23, 24 and 25.
-- Renders: `rev_d_pcb_step25_top.png`, `rev_d_pcb_step25_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step25.zip`, made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
+- KiCad 10 DRC with schematic parity (`baseline/rev_d_step26_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 31: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
+- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included), and on steps 23 to 26.
+- Renders: `rev_d_pcb_step26_top.png`, `rev_d_pcb_step26_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step26.zip`, made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
@@ -50,12 +50,14 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
     python rev-d-12v/tools/pcb_antenna_keepout.py step21.kicad_pcb step22.kicad_pcb
     python rev-d-12v/tools/pcb_power_plug_align.py step22.kicad_pcb step23.kicad_pcb
     python rev-d-12v/tools/pcb_review_fix_power.py step23.kicad_pcb step24.kicad_pcb
-    python rev-d-12v/tools/pcb_add_efuse.py step24.kicad_pcb rev_d.xml brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/pcb_add_efuse.py step24.kicad_pcb rev_d.xml step25.kicad_pcb
+    python rev-d-12v/tools/pcb_servo_power.py step25.kicad_pcb brineomatic/brineomatic.kicad_pcb
 
 Step 24 also edits the schematic and regenerates the CPL; those commands are in `REVIEW_FIXES.md`. Step 25 needs the step-25 schematic
-and its netlist (`rev_d.xml`) first and regenerates the BOM, CPL and gerbers; those commands are in `EFUSE.md`. Checked on 14 Nov 2026:
-this chain gives the committed step-25 board item for item, zone fills included; only the random ids of added items differ (the step-24
-board in between differs from the committed step-24 board only in zone fill, at most 2.4 mm2 per layer).
+and its netlist (`rev_d.xml`) first and regenerates the BOM, CPL and gerbers; those commands are in `EFUSE.md`. Step 26 changes copper
+only (gerbers: `SERVO_POWER.md`). Checked on 14 Nov 2026: this chain gives the step-25 board and the step-26 board item for item, zone
+fills included; only the random ids of added items differ (the step-24 board in between differs from the committed step-24 board only
+in zone fill, at most 2.4 mm2 per layer).
 
 ## Known cosmetic points of the resize
 
@@ -100,3 +102,10 @@ A 12 V eFuse (TI TPS16630, U3) goes back between the reverse-polarity MOSFETs an
 current limit, overvoltage cut-off, soft start. Nine parts added; the MOSFET-source copper becomes the new net PFET_OUT; D49, C22, R22,
 TP41 and the "FUSE 5x20" label move; ten references are hidden. DRC: nothing new (252 against 253). Trace: 0 unreached.
 Detail and numbers: `EFUSE.md`.
+
+## Step 26: servo supply on wide top-layer copper (review finding M1)
+
+The servo 5 V supply (5V_HIGH_POWER) from D10 to J6 pin 2 and J29 pin 2 now runs on the top layer, 1.8-4.0 mm wide, instead of
+0.25 mm track mostly on inner layer In1: 13 mOhm from F2 to each servo terminal instead of 161-230 mOhm. The 4.0 mm run uses the empty
+band below the top plug row. No net or part change; the TP42 via and one ground via moved slightly. DRC: identical to step 25.
+Trace: 0 unreached. Detail and numbers: `SERVO_POWER.md`.
