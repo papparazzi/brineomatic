@@ -81,14 +81,17 @@ and the toolkit's position file for the Rev-C1 board (`brineomatic/production/br
 
 ## Verification
 
-- KiCad 10.0.6 DRC with schematic parity, all severities (`baseline/rev_d_step24_drc.json`): **0 unconnected**; 253 violations against 254 at step 23 (one silkscreen-over-pad warning fewer, nothing new; all silkscreen and library notes). Parity: the 199 stale footprint-field texts known since step 15, no net or footprint mismatch. (The step-23 baseline, which this file replaces, was run on a copy without the schematic beside it, so it showed no parity entries; step 17 shows the same 199.)
+- KiCad 10.0.6 DRC with schematic parity, all severities (`baseline/rev_d_step24_drc.json`): **0 unconnected**; 253 violations against 254 at step 23 (one silkscreen-over-pad warning fewer, nothing new; all silkscreen and library notes). Parity: the stale footprint-field texts known since step 15, no net or footprint mismatch (199 is the limit of KiCad's report per type, not a count: see `EFUSE.md`). (The step-23 baseline, which this file replaces, was run on a copy without the schematic beside it, so it showed no parity entries; step 17 shows the same 199.)
 - ERC (`baseline/rev_d_step24_erc.json`): 436 entries, same count and types as step 17 (library-link notes only).
 - Pours: PRE_24 is one island holding F1.2, C13.2, C14.2, D19.1, Q9.3 and Q10.3 (step 23: two). The In2 +12V plane is still one island; no new ground fragments.
 - `tools/trace_connectors.py`: every plug pin reaches every pad of its net (0 unreached), as at step 23.
 - Gerbers (`mfg/gerbers-rev_d_step24.zip`, `tools/make_gerbers.py`): the script reproduces `gerbers-rev_d_step23.zip` from the step-23 board byte for byte apart from the date lines. 880 drill hits = 737 vias + 143 pad holes.
 - Renders: `rev_d_pcb_step24_top.png`, `rev_d_pcb_step24_bottom.png`.
+- Step 25 replaced these baselines, renders and the gerber zip with its own (`EFUSE.md`); the step-24 files are in commit 1fb8413.
 
 ## Not fixed here (the review's other findings stand)
+
+**Update, step 25 (`EFUSE.md`):** M2 fixed (TPS16630 eFuse U3 back after the MOSFETs); M3 accepted and M4 dropped by the owner on 13 Nov 2026; M1 and the minor findings still open.
 
 M1 servo 5 V on 0.25 mm inner-layer tracks (161-230 mOhm); M2 no current limit since the eFuse was removed (the MOSFETs carry a short until the fuse opens); M3 no undervoltage lockout; M4 4-20 mA sensors get about 8.3 V at a 10.5 V bus; the minor findings; note N1 (the standoffs H1-H4 are not in the BOM, Rev-C1's position file places them).
 The footprint fields on the board (LCSC numbers and others) still differ from the schematic in 199 places. `make_jlc.py` reads the schematic, so its BOM is right, but a board-based tool such as the Fabrication-Toolkit would pick wrong parts until the board is updated from the schematic.

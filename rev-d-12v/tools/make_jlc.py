@@ -12,7 +12,7 @@ groups = collections.defaultdict(list)
 CENTRE = {'F1': (157.6, 67.1)}   # courtyard centres measured with pcbnew (mm, KiCad y-down)
 CLI = os.environ.get('KICAD_CLI') or os.path.expanduser('~/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli')
 # package corrections from the toolkit's table (first match wins); only the rules that match a footprint on this board are listed
-PKG_ROT = (('^CP_Elec_', 180), ('^SOIC-', 270), ('^SOT-23', 180), ('^TSSOP-', 270))
+PKG_ROT = (('^CP_Elec_', 180), ('^HTSSOP-', 270), ('^SOIC-', 270), ('^SOT-23', 180), ('^TSSOP-', 270))
 # packages without a correction in that table, each checked against Rev-C1's position file or JLCPCB's placement viewer
 NO_ROT = ('C_', 'R_', 'L_', 'LED_', 'D_SMA', 'D_SMB', 'D_SOD-', 'Fuse_', 'Fuseholder_', 'PhoenixContact_MC_', 'JST_SH_', 'MagneticBuzzer_', 'VQFN-')
 rotoff = {}; corr = []

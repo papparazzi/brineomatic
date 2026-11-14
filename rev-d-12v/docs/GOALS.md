@@ -15,7 +15,7 @@ Fork of [hoeken/brineomatic](https://github.com/hoeken/brineomatic) at tag **Rev
 
 ## Non-goals / what is knowingly given up
 - **No 24 V operation.** A 24 V input will destroy the input TVS, FETs and fuse.
-- **No electronic input protection beyond reverse-polarity, TVS and the fuse**: UVLO, OVP, 4 A active current limit, soft-start and reverse-current blocking of the Rev-C1 TPS26630 are gone (the firmware never read IMON/FLT/PGOOD; they only went to test points).
+- **No electronic input protection beyond reverse-polarity, TVS and the fuse**: UVLO, OVP, 4 A active current limit, soft-start and reverse-current blocking of the Rev-C1 TPS26630 are gone (the firmware never read IMON/FLT/PGOOD; they only went to test points). **Step 25 (13 Nov 2026, independent review M2):** a smaller eFuse (TPS16630) is back after the P-FETs: 3.8 A current limit, 16.9 V overvoltage cut-off, 25 ms soft start, PGOOD to the buck enable. Still no undervoltage lockout (owner's decision) and no reverse-current blocking. See `EFUSE.md`.
 - **No on-board USB-C**: use the dev board's own USB port (a series diode, D57, prevents back-feeding when both 5 V and USB are present).
 - **Mechanics changed**: the board is 152.6 x 84.5 mm (Rev-C1: 106 x 63.5 mm); three of the five mounting holes moved, so the **Rev C case in `models/` does not fit**.
 - **Untested hardware.** Nothing in this branch has been built or bench-tested yet (`docs/BRINGUP_TEST_PLAN.md`). Treat it as a design proposal.

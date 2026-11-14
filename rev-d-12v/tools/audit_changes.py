@@ -10,7 +10,8 @@ def rng(p, lo, hi): return [f'{p}{i}' for i in range(lo, hi + 1)]
 ID = {}
 def tag(i, refs):
     for r in refs: ID[r] = i
-tag('A1', ['U3', 'Q3', 'Q8', 'R21', 'C15', 'TP50', 'TP51', 'TP52', 'Q9', 'Q10', 'R78', 'D56'] + rng('R', 72, 77))
+tag('A1', ['Q3', 'Q8', 'R21', 'TP50', 'TP51', 'TP52', 'Q9', 'Q10', 'R78', 'D56'])
+tag('K1', ['U3', 'C15', 'C63'] + rng('R', 72, 77))                          # step 25: TPS16630 eFuse (U3, R72-R77, C15 as on Rev-C1)
 tag('A2', ['U5', 'U6', 'U7', 'U8', 'J19', 'J20', 'J24', 'SW1', 'SW2', 'D36', 'D37', 'D38', 'D40', 'FB1', 'D57', 'TP27', 'TP28', 'TP29', 'C37', 'C38', 'C39', 'C40', 'C42', 'C43', 'R52', 'R53'] + rng('R', 43, 50))
 tag('B1', ['D19', 'D15', 'D27', 'D30', 'D33', 'D48'])                       # TVS 30 V -> 16 V
 tag('B2', ['D50', 'D51', 'D52', 'D53', 'D54', 'D55', 'D1', 'D2', 'D10', 'D44', 'D6', 'D24', 'D4', 'D9', 'D35', 'D42'])  # same-part source swaps

@@ -27,13 +27,13 @@ the socketed-module variant (step 18) lives on branch `rev-d-12v-stepper-socket`
 
 ## Supply voltage
 
-This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diodes, 30 V MOSFETs, P-FET reverse-polarity stage instead of the eFuse. It must not be connected to 24 V. The 12-24 V design is upstream Rev-C1.
+This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diodes, 30 V MOSFETs, a P-FET reverse-polarity stage and, since step 25, a 12 V eFuse (TPS16630) after it instead of Rev-C1's TPS26630: current limit about 3.8 A, off above 16.9 V (`EFUSE.md`). It must not be connected to 24 V. The 12-24 V design is upstream Rev-C1.
 
 ## Verification
 
-- KiCad 10 DRC with schematic parity (`baseline/rev_d_step24_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 32: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
-- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included).
-- Renders: `rev_d_pcb_step24_top.png`, `rev_d_pcb_step24_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step24.zip`, made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
+- KiCad 10 DRC with schematic parity (`baseline/rev_d_step25_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 31: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
+- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included), and on steps 23, 24 and 25.
+- Renders: `rev_d_pcb_step25_top.png`, `rev_d_pcb_step25_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step25.zip`, made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
@@ -49,9 +49,13 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
     python rev-d-12v/tools/pcb_branding_holes.py step20.kicad_pcb step21.kicad_pcb
     python rev-d-12v/tools/pcb_antenna_keepout.py step21.kicad_pcb step22.kicad_pcb
     python rev-d-12v/tools/pcb_power_plug_align.py step22.kicad_pcb step23.kicad_pcb
-    python rev-d-12v/tools/pcb_review_fix_power.py step23.kicad_pcb brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/pcb_review_fix_power.py step23.kicad_pcb step24.kicad_pcb
+    python rev-d-12v/tools/pcb_add_efuse.py step24.kicad_pcb rev_d.xml brineomatic/brineomatic.kicad_pcb
 
-Step 24 also edits the schematic and regenerates the CPL; those commands are in `REVIEW_FIXES.md`.
+Step 24 also edits the schematic and regenerates the CPL; those commands are in `REVIEW_FIXES.md`. Step 25 needs the step-25 schematic
+and its netlist (`rev_d.xml`) first and regenerates the BOM, CPL and gerbers; those commands are in `EFUSE.md`. Checked on 14 Nov 2026:
+this chain gives the committed step-25 board item for item, zone fills included; only the random ids of added items differ (the step-24
+board in between differs from the committed step-24 board only in zone fill, at most 2.4 mm2 per layer).
 
 ## Known cosmetic points of the resize
 
@@ -89,3 +93,10 @@ The JLCPCB quote of 13 Nov 2026 predates steps 22 and 23.
 The input power path from the fuse to the reverse-polarity MOSFETs and on to +12V is rebuilt with wide copper (B1), and the CPL now carries
 JLCPCB's rotation corrections, as Rev-C1's did (B2). No net change, no part change, BOM unchanged; the CPL and ten stale schematic
 `Rotation Offset` fields change. Detail, numbers and the remaining open findings: `REVIEW_FIXES.md`.
+
+## Step 25: eFuse back (review finding M2)
+
+A 12 V eFuse (TI TPS16630, U3) goes back between the reverse-polarity MOSFETs and the +12V rail, where Rev-C1 had its TPS26630:
+current limit, overvoltage cut-off, soft start. Nine parts added; the MOSFET-source copper becomes the new net PFET_OUT; D49, C22, R22,
+TP41 and the "FUSE 5x20" label move; ten references are hidden. DRC: nothing new (252 against 253). Trace: 0 unreached.
+Detail and numbers: `EFUSE.md`.

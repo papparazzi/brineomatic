@@ -7,3 +7,7 @@ Start with [`docs/GOALS.md`](docs/GOALS.md), then [`docs/CHANGE_REGISTER.md`](do
 **Status: untested design proposal.** See the open items at the end of the register.
 
 **Branch `rev-d-12v-labels` (13 Nov 2026):** silkscreen labels for every dev-board pin and every plug, plus breakout pads for the unused dev-board pins. No net change. See [`docs/LABELS_BREAKOUT.md`](docs/LABELS_BREAKOUT.md).
+
+**Branch `rev-d-12v-review-fixes` (step 24, 13 Nov 2026):** the two blockers of the independent review fixed (wide fuse-to-MOSFET-to-rail copper, CPL rotation corrections). No net change. See [`docs/REVIEW_FIXES.md`](docs/REVIEW_FIXES.md).
+
+**Branch `rev-d-12v-efuse` (step 25, 13 Nov 2026):** a 12 V eFuse (TI TPS16630, U3) back between the reverse-polarity MOSFETs and the rail: current limit, overvoltage cut-off, soft start (review finding M2). See [`docs/EFUSE.md`](docs/EFUSE.md).
