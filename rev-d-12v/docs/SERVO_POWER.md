@@ -65,6 +65,7 @@ The servo supply is DC with small steps. The TDS crossings make at most about 0.
 - Pours: 5V_HIGH_POWER is one copper cluster. Ground: the same 8 small fragments as step 25 and no new one (own union-find over pours, vias, pads and tracks). Each ground pour has the same number of islands as at step 25 on the top and bottom layer, and one fewer on In1. Every other pour is unchanged, except that the In2 +3.3V plane gains 5 mm2 where the four deleted vias were.
 - Gerbers (`mfg/gerbers-rev_d_step26.zip`, `tools/make_gerbers.py`): 883 drill hits = 740 vias + 143 pad holes (step 25: 887 = 744 + 143).
 - Renders: `rev_d_pcb_step26_top.png`, `rev_d_pcb_step26_bottom.png`. Step 26 replaced the step-25 baselines, renders and gerber zip; the step-25 files are in commit 964d7b9.
+- Step 27 (C57 back to 100 uF, `CHANGE_REGISTER.md` section M) replaced the DRC/ERC baselines named above with its own; the step-26 ones are in commit 4290036. The gerbers and renders above stay valid: step 27 does not change copper or silkscreen.
 
 ## Still to do by a person, before paying
 

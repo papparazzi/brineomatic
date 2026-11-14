@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-11-14T15:36:39",
+    "date": "2026-11-14T17:30:08",
     "ignored_checks": [
         {
             "description": "Thermal relief connection to zone incomplete",
@@ -2999,7 +2999,7 @@
             "type": "footprint_symbol_field_mismatch"
         },
         {
-            "description": "Field 'LCSC' differs (PCB: 'C2836442', Schematic: 'C3349')",
+            "description": "Field 'Datasheet' differs (PCB: '~', Schematic: '')",
             "items": [
                 {
                     "description": "Footprint C57",

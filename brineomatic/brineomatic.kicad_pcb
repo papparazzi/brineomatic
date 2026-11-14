@@ -7994,7 +7994,7 @@
 				)
 			)
 		)
-		(property "Value" "47uF / 50v"
+		(property "Value" "100uF / 35v"
 			(at 0 4.35 0)
 			(layer "F.Fab")
 			(uuid "9cf96d6f-344d-49fe-8c1d-a52637099b99")

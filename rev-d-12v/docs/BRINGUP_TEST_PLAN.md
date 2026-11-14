@@ -14,7 +14,7 @@ Do not order a larger batch until every line is ticked. Use a lab supply with cu
 9. **Stepper**: TMC2209 at 12 V, current setting, torque at speed vs the old 24 V board.
 10. **Sensors**: 4-20 mA inputs with a calibrator at 4/12/20 mA; check the loop sensor still works at 11 V supply; flowmeter inputs (2.2 nF RC) with a pulse generator; TDS; DS18B20; I2C (J2); RS-485 with the SP3485EN; servo outputs; buzzer.
 11. **Buck**: 5 V ripple and load step 0->1 A (compensation C18 2.2 nF).
-12. **Later swaps**: AO3400A output FETs (B4): temperature at 3 A for 30 min per output and gate threshold; red LED brightness (B5); buzzer + 1N4148W flyback (B6); C57 47 uF input ripple at 3 A and stepper start-up (C3); BAV99 ADC offset at 50-60 C (B2).
+12. **Later swaps**: AO3400A output FETs (B4): temperature at 3 A for 30 min per output and gate threshold; red LED brightness (B5); buzzer + 1N4148W flyback (B6); C57 input ripple at 3 A and stepper start-up (C3; 100 uF again since step 27, as Rev-C1); BAV99 ADC offset at 50-60 C (B2).
 13. **Connectors**: wire a 3-pin and a 4-pin terminal with real cables, check pin order against the silkscreen; ESP32-S3-DevKitC-1 **v1.1** seats fully in the sockets and the USB port stays accessible.
 14. **eFuse current limit** (step 25): electronic load on +12V, supply limit 6 A. Step the load from 3.0 A to 4.5 A: U3 limits between 3.45 and 4.21 A, switches off after about 162 ms and retries (R75 fitted). F1 must not open.
 15. **Short on +12V**: supply limit 6 A, short +12V to GND through a switch for a few seconds: U3 limits and retries, Q9/Q10 and F1 survive, +12V comes back by itself when the short is removed. Repeat from a stiff source (charged 12 V battery through F1) only after this passes.

@@ -31,9 +31,9 @@ This board is **12 V only (9-15 V)**, as the rest of `rev-d-12v`: 16 V TVS diode
 
 ## Verification
 
-- KiCad 10 DRC with schematic parity (`baseline/rev_d_step26_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 31: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
-- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included), and on steps 23 to 26.
-- Renders: `rev_d_pcb_step26_top.png`, `rev_d_pcb_step26_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step26.zip`, made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
+- KiCad 10 DRC with schematic parity (`baseline/rev_d_step27_drc.json`, all severities): 0 unconnected, 0 clearance, 0 shorts; against step 17 only silkscreen warnings changed (silk over copper 12 -> 13, silk overlap 23 -> 31: the plug names touch the pin-1 triangles of the plug footprints) and the 2 dangling-track warnings are gone.
+- `tools/trace_connectors.py`: an independent walk over the copper (track ends, vias, pads, filled pours) from every pin of every plug. **Every pin reaches every other pad of its net** (0 unreached), on step 17, 19, 20 and 21 (the four standoffs included), and on steps 23 to 27.
+- Renders: `rev_d_pcb_step26_top.png`, `rev_d_pcb_step26_bottom.png`. Gerbers and drill files: `mfg/gerbers-rev_d_step26.zip` (step 27 leaves the gerbers unchanged apart from dates), made with `tools/make_gerbers.py` (`.gitignore` now lets zip files in `rev-d-12v/mfg/` through). Not uploaded to JLCPCB, **not quoted**: the board area grew 11.7 % against step 17, so the bare-board price may rise slightly.
 
 ### Why tracks seem to "stop in the middle of nowhere" in a 3D or JLCPCB view
 
@@ -51,11 +51,12 @@ the 5 V pin sits in a 5 V copper area on inner layer 2; the GND pin connects thr
     python rev-d-12v/tools/pcb_power_plug_align.py step22.kicad_pcb step23.kicad_pcb
     python rev-d-12v/tools/pcb_review_fix_power.py step23.kicad_pcb step24.kicad_pcb
     python rev-d-12v/tools/pcb_add_efuse.py step24.kicad_pcb rev_d.xml step25.kicad_pcb
-    python rev-d-12v/tools/pcb_servo_power.py step25.kicad_pcb brineomatic/brineomatic.kicad_pcb
+    python rev-d-12v/tools/pcb_servo_power.py step25.kicad_pcb step26.kicad_pcb
+    python rev-d-12v/tools/pcb_c57_revert.py step26.kicad_pcb brineomatic/brineomatic.kicad_pcb
 
 Step 24 also edits the schematic and regenerates the CPL; those commands are in `REVIEW_FIXES.md`. Step 25 needs the step-25 schematic
 and its netlist (`rev_d.xml`) first and regenerates the BOM, CPL and gerbers; those commands are in `EFUSE.md`. Step 26 changes copper
-only (gerbers: `SERVO_POWER.md`). Checked on 14 Nov 2026: this chain gives the step-25 board and the step-26 board item for item, zone
+only (gerbers: `SERVO_POWER.md`). Step 27 changes C57's value text on the board and C57 in the schematic; its commands are in the step-27 section below. Checked on 14 Nov 2026: this chain gives the step-25 board and the step-26 board item for item, zone
 fills included; only the random ids of added items differ (the step-24 board in between differs from the committed step-24 board only
 in zone fill, at most 2.4 mm2 per layer).
 
@@ -109,3 +110,19 @@ The servo 5 V supply (5V_HIGH_POWER) from D10 to J6 pin 2 and J29 pin 2 now runs
 0.25 mm track mostly on inner layer In1: 13 mOhm from F2 to each servo terminal instead of 161-230 mOhm. The 4.0 mm run uses the empty
 band below the top plug row. No net or part change; the TP42 via and one ground via moved slightly. DRC: identical to step 25.
 Trace: 0 unreached. Detail and numbers: `SERVO_POWER.md`.
+
+## Step 27: C57 back to Rev-C1's 100 uF
+
+C57, the bulk capacitor of the TMC2209 supply on +12V, goes back from 47 uF/50 V (C3349) to Rev-C1's 100 uF/35 V (C2836442). The
+October swap was meant to save a line fee, but JLCPCB charges the C3349 line too, and no 100 uF SMD electrolytic at JLCPCB is
+fee-free; the swap only halved the capacitance. Same footprint and place: copper and silkscreen do not change (gerbers identical to
+step 26 apart from dates). The BOM changes in one line; the CPL does not change. DRC: same counts as step 26. Trace: 0 unreached.
+Detail and numbers: `CHANGE_REGISTER.md` section M.
+
+    python rev-d-12v/tools/sch_c57_revert.py brineomatic
+    python rev-d-12v/tools/pcb_c57_revert.py step26.kicad_pcb brineomatic/brineomatic.kicad_pcb
+    kicad-cli sch export netlist --format kicadxml -o rev_d.xml brineomatic/brineomatic.kicad_sch
+    KICAD_CLI=<kicad-cli> python rev-d-12v/tools/make_jlc.py rev_d.xml brineomatic/brineomatic.kicad_pcb rev-d-12v/mfg
+    python rev-d-12v/tools/audit_changes.py rev_c1.xml rev_d.xml rev-d-12v/docs/CHANGE_AUDIT.md
+
+`rev_c1.xml` is the netlist of the Rev-C1 tag's schematic (`kicad-cli sch export netlist` on a `git archive Rev-C1` copy).
