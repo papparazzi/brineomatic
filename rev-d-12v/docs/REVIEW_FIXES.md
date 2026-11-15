@@ -95,6 +95,8 @@ and the toolkit's position file for the Rev-C1 board (`brineomatic/production/br
 
 **Update, step 26 (`SERVO_POWER.md`):** M1 fixed (servo 5 V on 1.8-4.0 mm top-layer copper, 13 mOhm from F2 to each servo terminal); the minor findings and N1 still open.
 
+**Update, step 27 (`CHANGE_REGISTER.md` section M):** minor finding m6 fixed (C57 back to Rev-C1's 100 uF / 35 V, the TMC2209 datasheet's recommended minimum); the other minor findings and N1 still open.
+
 M1 servo 5 V on 0.25 mm inner-layer tracks (161-230 mOhm); M2 no current limit since the eFuse was removed (the MOSFETs carry a short until the fuse opens); M3 no undervoltage lockout; M4 4-20 mA sensors get about 8.3 V at a 10.5 V bus; the minor findings; note N1 (the standoffs H1-H4 are not in the BOM, Rev-C1's position file places them).
 The footprint fields on the board (LCSC numbers and others) still differ from the schematic in 199 places. `make_jlc.py` reads the schematic, so its BOM is right, but a board-based tool such as the Fabrication-Toolkit would pick wrong parts until the board is updated from the schematic.
 

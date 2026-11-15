@@ -14,4 +14,4 @@ Start with [`docs/GOALS.md`](docs/GOALS.md), then [`docs/CHANGE_REGISTER.md`](do
 
 **Branch `rev-d-12v-servo-power` (step 26, 14 Nov 2026):** the servo 5 V supply re-routed from thin inner-layer tracks onto 1.8-4.0 mm top-layer copper, 13 mOhm instead of 161-230 mOhm (review finding M1). No net or part change. See [`docs/SERVO_POWER.md`](docs/SERVO_POWER.md).
 
-**Branch `rev-d-12v-c57-100uf` (step 27, 14 Nov 2026):** C57, the bulk capacitor of the stepper driver's 12 V supply, back to Rev-C1's 100 uF / 35 V (C2836442). The October swap to 47 uF saved no line fee. No layout change. See [`docs/CHANGE_REGISTER.md`](docs/CHANGE_REGISTER.md) section M.
+**Branch `rev-d-12v-c57-100uf` (step 27, 14 Nov 2026):** C57, the bulk capacitor of the stepper driver's 12 V supply, back to Rev-C1's 100 uF / 35 V (C2836442). The October swap to 47 uF saved no line fee (review finding m6). No layout change. See [`docs/CHANGE_REGISTER.md`](docs/CHANGE_REGISTER.md) section M.

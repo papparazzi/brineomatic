@@ -111,7 +111,7 @@ The servo 5 V supply (5V_HIGH_POWER) from D10 to J6 pin 2 and J29 pin 2 now runs
 band below the top plug row. No net or part change; the TP42 via and one ground via moved slightly. DRC: identical to step 25.
 Trace: 0 unreached. Detail and numbers: `SERVO_POWER.md`.
 
-## Step 27: C57 back to Rev-C1's 100 uF
+## Step 27: C57 back to Rev-C1's 100 uF (review finding m6)
 
 C57, the bulk capacitor of the TMC2209 supply on +12V, goes back from 47 uF/50 V (C3349) to Rev-C1's 100 uF/35 V (C2836442). The
 October swap was meant to save a line fee, but JLCPCB charges the C3349 line too, and no 100 uF SMD electrolytic at JLCPCB is
