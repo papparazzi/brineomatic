@@ -159,7 +159,7 @@ Steps 1-24 dropped the eFuse to save its charged line and its many support parts
 | R27 | 100 kOhm | 47 kOhm | the power LED gets the same current at 12 V as Rev-C1's at 24 V | - |
 | R23, R25 | 82 kOhm, 62 kOhm | same values, other LCSC parts | R25's original part was short of stock | - |
 
-C57, the 100 uF bulk capacitor of the stepper driver's supply, was 47 uF from October to step 26 to avoid a line fee. JLCPCB's line-by-line test on 1 Nov 2026 showed that line is charged anyway, and none of the 1,146 100 uF SMD electrolytics at JLCPCB is fee-free, so step 27 put Rev-C1's part back.
+C57, the 100 uF bulk capacitor of the stepper driver's supply, was 47 uF from October to step 26 to avoid a line fee. JLCPCB's line-by-line test on 1 Nov 2026 showed that line is charged anyway, and none of the 1,146 100 uF SMD electrolytics at JLCPCB is fee-free, so step 27 put Rev-C1's part back. This also closes the review's minor finding m6: the TMC2209 datasheet recommends at least 100 uF near the driver.
 
 ### 6. Connectors: one family of 3.5 mm pluggable screw terminals (D1, D2)
 
@@ -196,7 +196,7 @@ C57, the 100 uF bulk capacitor of the stepper driver's supply, was 47 uF from Oc
 - Step 24: the path from the fuse to the MOSFETs is rebuilt with wide copper (2.3 and 3.1 mOhm instead of 34 and 45 mOhm), and the placement file now carries JLCPCB's rotation corrections, as Rev-C1's did ([review fixes][fixes]).
 - Step 25: the eFuse area (section 3).
 - Step 26: the servo 5 V supply moves from 0.25 mm inner-layer tracks to 1.8-4.0 mm top-layer copper, 13 mOhm from F2 to each servo terminal instead of 161-230 mOhm ([SERVO_POWER.md][servo]). No part moved.
-- Step 27: C57 back to Rev-C1's 100 uF (section 5). Copper and silkscreen do not change.
+- Step 27: C57 back to Rev-C1's 100 uF (section 5; review finding m6). Copper and silkscreen do not change.
 - After every step: KiCad DRC with schematic parity, ERC, an independent copper trace from every plug pin, and the audit against Rev-C1.
 
 ### 10. Manufacturing files and scripts
@@ -224,7 +224,7 @@ These include the 14 charged lines for which no fee-free part with the same func
 
 ## Independent review
 
-An independent design review of step 22 (13 Nov 2026, by an AI model in a separate session; the brief is in [INDEPENDENT_REVIEW_BRIEF.md][brief]) found two blockers and four major findings. All six are now fixed or closed by the owner's decision; the minor findings are still open.
+An independent design review of step 22 (13 Nov 2026, by an AI model in a separate session; the brief is in [INDEPENDENT_REVIEW_BRIEF.md][brief]) found two blockers, four major findings and eleven minor ones. All six blockers and majors are now fixed or closed by the owner's decision; of the minor findings, m6 is fixed and the rest are open.
 
 | Finding | Status |
 |---|---|
@@ -234,9 +234,10 @@ An independent design review of step 22 (13 Nov 2026, by an AI model in a separa
 | M2: nothing limited a short after the eFuse was removed | fixed in step 25 (TPS16630) |
 | M3: no undervoltage lockout | accepted by the owner |
 | M4: 4-20 mA sensor headroom at low battery | dropped: the circuit is the same as Rev-C1's, and the battery is assumed to stay at 12 V or above |
-| Minor findings m1-m11, note N1 | open |
+| m6: C57 halved to 47 uF, against the TMC2209 datasheet's 100 uF minimum | fixed in step 27: 100 uF again, as Rev-C1 |
+| Other minor findings (m1-m5, m7-m11), note N1 | open |
 
-Detail: [REVIEW_FIXES.md][fixes], [EFUSE.md][efuse] and [SERVO_POWER.md][servo].
+Detail: [REVIEW_FIXES.md][fixes], [EFUSE.md][efuse], [SERVO_POWER.md][servo] and section M of the [change register][register].
 
 ## Before you order
 
